@@ -4,7 +4,8 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -288,8 +289,8 @@
                         <div class="specs-grid">
                             {% for spec in group_specs %}
                             <div class="spec-card group-spec">
-                                <div class="spec-card-header">
-                                    <div class="spec-name" title="{{ spec.chi_tiet_thong_so }}">
+                                <div class="spec-card-header" style="background-color: #0d6efd">
+                                    <div class="spec-name" title="{{ spec.chi_tiet_thong_so }}" style="color: white;">
                                         {{ spec.ten_thong_so }}
                                     </div>
                                     <div class="spec-actions">
@@ -426,9 +427,39 @@
         </div>
     </div>
 </div>
+<div id="history-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Lịch sử tài sản</h3>
+            <span class="close" onclick="hideHistoryModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="history-filters">
+                <button class="history-filter-btn active" data-filter="all">
+                    <i class="fas fa-history"></i> Tất cả
+                </button>
+                <button class="history-filter-btn" data-filter="general">
+                    <i class="fas fa-info-circle"></i> Thông tin chung
+                </button>
+                <button class="history-filter-btn" data-filter="specification">
+                    <i class="fas fa-cogs"></i> Thông số kỹ thuật
+                </button>
+                <button class="history-filter-btn" data-filter="handover">
+                    <i class="fas fa-exchange-alt"></i> Bàn giao
+                </button>
+            </div>
+            <div class="history-list">
+                <div class="history-loading">
+                    <i class="fas fa-spinner"></i> Đang tải lịch sử...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/detail.js') }}"></script>
 <script src="{{ url_for('static', filename='js/edit.js') }}"></script>
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
 {% endblock %}

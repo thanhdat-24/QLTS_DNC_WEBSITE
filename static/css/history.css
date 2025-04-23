@@ -1,0 +1,215 @@
+/* 
+=======================
+    MODAL HISTORY STYLES 
+======================= 
+*/
+
+#history-modal .modal-content {
+    width: 700px;
+    max-width: 90%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#history-modal .modal-header {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 5;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+
+#history-modal .modal-body {
+    padding: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.history-filters {
+    display: flex;
+    gap: 10px;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--gray-light);
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 4;
+}
+
+.history-filter-btn {
+    background-color: white;
+    border: 1px solid var(--gray-light);
+    border-radius: var(--border-radius-sm);
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.history-filter-btn:hover {
+    background-color: var(--gray-light);
+}
+
+.history-filter-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.history-filter-btn i {
+    font-size: 12px;
+}
+
+.history-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--gray-dark);
+}
+
+.history-empty i {
+    font-size: 48px;
+    color: var(--gray);
+    margin-bottom: 10px;
+}
+
+.history-list {
+    padding: 0;
+}
+
+.history-item {
+    display: flex;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--gray-light);
+    transition: background-color 0.2s ease;
+}
+
+.history-item:hover {
+    background-color: rgba(var(--primary-color-rgb, 63, 81, 181), 0.05);
+}
+
+.history-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 15px;
+}
+
+.history-icon.info {
+    background-color: rgba(var(--primary-color-rgb, 63, 81, 181), 0.1);
+    color: var(--primary-color);
+}
+
+.history-icon.update {
+    background-color: rgba(var(--accent-color-rgb, 77, 182, 172), 0.1);
+    color: var(--accent-color);
+}
+
+.history-icon.warning {
+    background-color: rgba(var(--warning-color-rgb, 255, 152, 0), 0.1);
+    color: var(--warning-color);
+}
+
+.history-icon.error {
+    background-color: rgba(var(--danger-color-rgb, 244, 67, 54), 0.1);
+    color: var(--danger-color);
+}
+
+.history-icon.handover {
+    background-color: rgba(var(--secondary-color-rgb, 126, 87, 194), 0.1);
+    color: var(--secondary-color);
+}
+
+.history-content {
+    flex-grow: 1;
+}
+
+.history-message {
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+.history-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--gray-dark);
+    font-size: 12px;
+}
+
+.history-time {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.history-category {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 6px;
+    background-color: var(--gray-light);
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+.history-link {
+    margin-left: auto;
+    color: var(--primary-color);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+}
+
+.history-link:hover {
+    text-decoration: underline;
+}
+
+.history-loading {
+    padding: 20px;
+    text-align: center;
+    color: var(--gray-dark);
+}
+
+.history-loading i {
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive styles */
+@media (max-width: 576px) {
+    .history-filters {
+        flex-wrap: wrap;
+    }
+    
+    .history-filter-btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .history-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .history-link {
+        margin-left: 0;
+        margin-top: 5px;
+    }
+}

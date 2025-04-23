@@ -480,3 +480,27 @@ def api_check_seri():
         return jsonify({'duplicate': True})
     
     return jsonify({'duplicate': False})
+
+# Thêm đoạn mã này vào cuối file asset_routes.py
+
+from services.history_service import HistoryService
+history_service = HistoryService()
+
+@asset_routes.route('/api/assets/<int:asset_id>/history')
+@login_required
+def api_asset_history(asset_id):
+    """API trả về lịch sử của tài sản"""
+    # Kiểm tra tài sản có tồn tại không
+    asset = asset_service.get_asset_detail(asset_id)
+    if not asset:
+        return jsonify({'success': False, 'error': 'Không tìm thấy tài sản'}), 404
+    
+    # Lấy lịch sử của tài sản
+    history = history_service.get_asset_history(asset_id)
+    
+    return jsonify({
+        'success': True,
+        'asset_id': asset_id,
+        'asset_name': asset.get('chitietphieunhap', {}).get('ten_tai_san', 'Tài sản'),
+        'history': history
+    })

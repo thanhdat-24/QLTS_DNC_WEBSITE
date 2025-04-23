@@ -268,22 +268,22 @@ class AssetService:
         # Đây chỉ là dữ liệu mẫu, bạn cần thay thế bằng dữ liệu thực từ Supabase
         stats = {
             'it': {
-                'count': 127,
+                'count': 30,
                 'title': 'Thiết bị IT',
                 'icon': 'desktop'
             },
             'office': {
-                'count': 43,
+                'count': 20,
                 'title': 'Thiết bị VP',
                 'icon': 'print'
             },
             'furniture': {
-                'count': 85,
-                'title': 'Nội thất',
+                'count': 25,
+                'title': 'Nội thất trường học',
                 'icon': 'couch'
             },
             'maintenance': {
-                'count': 12,
+                'count': 2,
                 'title': 'Cần bảo trì',
                 'icon': 'exclamation-triangle'
             }

@@ -26,5 +26,5 @@ class Config:
         URL_ENCRYPTION_KEY = base64.urlsafe_b64encode(key_bytes)
     
 # Cấu hình khác
-ITEMS_PER_PAGE = 12  # Thay đổi từ 10 thành 12
-USE_ENCRYPTED_URLS = os.getenv('USE_ENCRYPTED_URLS', 'True').lower() in ('true', '1', 't')
+    ITEMS_PER_PAGE = 12  # Thay đổi từ 10 thành 12
+    USE_ENCRYPTED_URLS = os.getenv('USE_ENCRYPTED_URLS', 'True').lower() in ('true', '1', 't')

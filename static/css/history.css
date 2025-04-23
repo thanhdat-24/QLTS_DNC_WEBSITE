@@ -213,3 +213,19 @@
         margin-top: 5px;
     }
 }
+/* CSS cho lịch sử di chuyển tài sản */
+.history-icon.movement {
+    background-color: rgba(var(--info-color-rgb, 33, 150, 243), 0.1);
+    color: var(--info-color, #2196f3);
+}
+
+/* Thêm màu sắc cho loại lịch sử di chuyển */
+.history-filter-btn[data-filter="movement"] {
+    color: var(--info-color, #2196f3);
+    border-color: var(--info-color-rgb, 33, 150, 243);
+}
+
+.history-filter-btn[data-filter="movement"].active {
+    background-color: var(--info-color, #2196f3);
+    color: white;
+}

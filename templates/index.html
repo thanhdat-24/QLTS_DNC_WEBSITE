@@ -58,29 +58,29 @@
                 <input type="text" id="searchInput" name="search" value="{{ search }}" placeholder="Tìm kiếm tài sản theo tên, số seri, mã QR...">
             </div>
             <div class="filter-container">
-                <div class="filter-dropdown">
-                    <button type="button" class="filter-btn" id="loaiTsFilter">
+                <!-- <div class="filter-dropdown">
+                    <button type="button" class="filter-btn" id="nhomTsFilter">
                         <i class="fas fa-tag"></i> 
-                        {% if selected_category == 'all' %}
-                            Loại tài sản
+                        {% if selected_group == 'all' %}
+                            Nhóm tài sản
                         {% else %}
-                            {% for category in categories %}
-                                {% if category.ma_loai_ts|string == selected_category %}
-                                    {{ category.ten_loai_ts }}
+                            {% for group in groups %}
+                                {% if group.ma_nhom_ts|string == selected_group %}
+                                    {{ group.ten_nhom_ts }}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="filter-menu" id="loaiTsMenu">
-                        <div class="filter-option {% if selected_category == 'all' %}selected{% endif %}" data-value="all">Tất cả</div>
-                        {% for category in categories %}
-                        <div class="filter-option {% if category.ma_loai_ts|string == selected_category %}selected{% endif %}" 
-                             data-value="{{ category.ma_loai_ts }}">{{ category.ten_loai_ts }}</div>
+                    <div class="filter-menu" id="nhomTsMenu">
+                        <div class="filter-option {% if selected_group == 'all' %}selected{% endif %}" data-value="all">Tất cả</div>
+                        {% for group in groups %}
+                        <div class="filter-option {% if group.ma_nhom_ts|string == selected_group %}selected{% endif %}" 
+                             data-value="{{ group.ma_nhom_ts }}">{{ group.ten_nhom_ts }}</div>
                         {% endfor %}
                     </div>
-                    <input type="hidden" name="category" id="categoryInput" value="{{ selected_category }}">
-                </div>
+                    <input type="hidden" name="group" id="groupInput" value="{{ selected_group }}">
+                </div> -->
                 <div class="filter-dropdown">
                     <button type="button" class="filter-btn" id="tinhTrangFilter">
                         <i class="fas fa-info-circle"></i> 
@@ -254,7 +254,7 @@
         document.querySelectorAll('.filter-option').forEach(option => {
             option.addEventListener('click', function() {
                 const menu = this.closest('.filter-menu');
-                const inputId = menu.id === 'loaiTsMenu' ? 'categoryInput' : 'statusInput';
+                const inputId = menu.id === 'nhomTsMenu' ? 'groupInput' : 'statusInput';
                 document.getElementById(inputId).value = this.dataset.value;
                 document.getElementById('searchForm').submit();
             });
@@ -263,7 +263,7 @@
         // Xử lý clear filter
         document.getElementById('clearFilters').addEventListener('click', function() {
             document.getElementById('searchInput').value = '';
-            document.getElementById('categoryInput').value = 'all';
+            document.getElementById('groupInput').value = 'all';  // Đổi từ categoryInput thành groupInput
             document.getElementById('statusInput').value = 'all';
             document.getElementById('searchForm').submit();
         });

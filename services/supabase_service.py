@@ -24,34 +24,31 @@ class SupabaseService:
         """Trả về Supabase client đã khởi tạo"""
         return self._client
     
-    def get_assets(self, page=1, limit=10, search=None, category=None, status=None):
+    def get_assets(self, page=1, limit=10, search=None, group=None, status=None):
         """
         Lấy danh sách tài sản với phân trang và lọc
-        
+    
         Args:
             page: Trang hiện tại
             limit: Số lượng kết quả mỗi trang
             search: Từ khóa tìm kiếm
-            category: Lọc theo loại tài sản
+            group: Lọc theo nhóm tài sản
             status: Lọc theo tình trạng
-            
-        Returns:
-            Danh sách tài sản và tổng số lượng
         """
         offset = (page - 1) * limit
-        
-        # Bắt đầu query, thay đổi cách join
+    
+        # Bắt đầu query
         query = self._client.table('taisan') \
             .select('*, chitietphieunhap:ma_chi_tiet_pn(ten_tai_san, ma_nhom_ts, nhomtaisan:ma_nhom_ts(ten_nhom_ts, loaitaisan:ma_loai_ts(ten_loai_ts)))') \
             .limit(limit) \
             .offset(offset)
-        
+    
         # Thêm điều kiện tìm kiếm
         if search:
             query = query.or_(f'ten_tai_san.ilike.%{search}%, so_seri.ilike.%{search}%, ma_qr.ilike.%{search}%')
-            
-        # Lọc theo loại tài sản - cần điều chỉnh vì ma_nhom_ts nằm trong chitietphieunhap
-        if category and category != 'all':
+        
+        # Lọc theo nhóm tài sản
+        if group and group != 'all':
             # Không thể lọc trực tiếp, chúng ta sẽ lọc sau khi lấy dữ liệu
             pass
             
@@ -61,10 +58,10 @@ class SupabaseService:
             
         # Thực thi query
         response = query.execute()
-        
+    
         # Đếm tổng số lượng kết quả (không phân trang)
         count_query = self._client.table('taisan').select('ma_tai_san', count='exact')
-        
+    
         # Thêm điều kiện tìm kiếm tương tự
         if search:
             count_query = count_query.or_(f'ten_tai_san.ilike.%{search}%, so_seri.ilike.%{search}%, ma_qr.ilike.%{search}%')
@@ -73,19 +70,18 @@ class SupabaseService:
             count_query = count_query.eq('tinh_trang_sp', status)
             
         count_response = count_query.execute()
-        
+    
         data = response.data
-        
-        # Lọc theo loại tài sản sau khi lấy dữ liệu
-        if category and category != 'all':
+    
+        # Lọc theo nhóm tài sản sau khi lấy dữ liệu
+        if group and group != 'all':
             filtered_data = []
             for item in data:
-                if item.get('chitietphieunhap') and item['chitietphieunhap'].get('nhomtaisan') and \
-                item['chitietphieunhap']['nhomtaisan'].get('loaitaisan') and \
-                str(item['chitietphieunhap']['nhomtaisan']['loaitaisan'].get('ma_loai_ts')) == category:
+                if item.get('chitietphieunhap') and \
+                str(item['chitietphieunhap'].get('ma_nhom_ts')) == group:
                     filtered_data.append(item)
             data = filtered_data
-        
+    
         # Trả về kết quả và tổng số lượng
         return data, count_response.count
     
@@ -270,6 +266,24 @@ class SupabaseService:
         if response.data and len(response.data) > 0:
             return response.data[0]
         return None
+    
+    def get_asset_movement_history(self, asset_id):
+        """
+        Lấy lịch sử di chuyển của tài sản
+    
+        Args:
+            asset_id: ID của tài sản
+        
+        Returns:
+            Danh sách lịch sử di chuyển
+        """
+        response = self._client.table('lichsudichuyentaisan') \
+            .select('*, phong_cu:ma_phong_cu(ten_phong), phong_moi:ma_phong_moi(ten_phong)') \
+            .eq('ma_tai_san', asset_id) \
+            .order('ngay_ban_giao', desc=True) \
+            .execute()
+        
+        return response.data
     
     # Thêm hoặc cập nhật phương thức update_asset trong AssetService
 

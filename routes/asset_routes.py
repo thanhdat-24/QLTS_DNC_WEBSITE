@@ -18,31 +18,32 @@ def index():
     # Lấy tham số từ query string
     page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '')
-    category = request.args.get('category', 'all')
+    group = request.args.get('group', 'all')
     status = request.args.get('status', 'all')
     
     # Lấy danh sách tài sản và thông tin phân trang
     assets, pagination = asset_service.get_assets(
         page=page,
         search=search,
-        category=category,
-        status=status
+        group=group,
+        status=status,
+        limit=12
     )
     
     # Lấy thống kê tài sản
     stats = asset_service.get_asset_stats()
     
-    # Lấy các danh mục để hiển thị filter
-    categories = asset_service.get_categories()
+    # Lấy danh sách nhóm tài sản để hiển thị filter
+    groups = asset_service.get_groups()
     
     return render_template(
         'index.html',
         assets=assets,
         pagination=pagination,
         stats=stats,
-        categories=categories,
+        groups=groups,
         search=search,
-        selected_category=category,
+        selected_group=group,
         selected_status=status
     )
 

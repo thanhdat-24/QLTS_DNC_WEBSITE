@@ -28,7 +28,7 @@ class AssetService:
     def __init__(self):
         self.supabase = SupabaseService()
     
-    def get_assets(self, page=1, limit=10, search=None, category=None, status=None):
+    def get_assets(self, page=1, limit=10, search=None, group=None, status=None):
         """
         Lấy danh sách tài sản với phân trang và lọc
         
@@ -36,13 +36,13 @@ class AssetService:
             page: Trang hiện tại
             limit: Số lượng mỗi trang
             search: Từ khóa tìm kiếm
-            category: Lọc theo loại tài sản
+            group: Lọc theo nhóm tài sản
             status: Lọc theo tình trạng
             
         Returns:
             Danh sách tài sản và thông tin phân trang
         """
-        assets, total = self.supabase.get_assets(page, limit, search, category, status)
+        assets, total = self.supabase.get_assets(page, limit, search, group, status)
         
         # Xử lý và chuẩn hóa dữ liệu nếu cần thiết
         for asset in assets:

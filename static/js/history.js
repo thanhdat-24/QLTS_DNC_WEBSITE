@@ -118,6 +118,11 @@ function renderAssetHistory() {
             iconClass = 'exchange-alt';
         }
         
+        // Nếu là di chuyển, dùng icon khác
+        if (item.category === 'movement') {
+            iconClass = 'arrows-alt';
+        }
+        
         // Tạo nội dung cho danh mục
         let categoryContent = '';
         switch(item.category) {
@@ -126,6 +131,9 @@ function renderAssetHistory() {
                 break;
             case 'handover':
                 categoryContent = '<i class="fas fa-exchange-alt"></i> Bàn giao';
+                break;
+            case 'movement':
+                categoryContent = '<i class="fas fa-arrows-alt"></i> Di chuyển';
                 break;
             case 'general':
             default:

@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+
+{% block title %}Thông báo - Hệ Thống Quản Lý Tài Sản{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .notification-page h1 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .notification-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .notification-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .notification-filter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .notification-filter select {
+        padding: 8px 12px;
+        border: 1px solid var(--gray-light);
+        border-radius: var(--border-radius);
+        font-size: 14px;
+    }
+    
+    .notification-list {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+    
+    .notification-item {
+        display: flex;
+        padding: 15px;
+        border-bottom: 1px solid var(--gray-light);
+        transition: background-color 0.2s ease;
+    }
+    
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+    
+    .notification-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .notification-item.unread {
+        background-color: rgba(63, 81, 181, 0.05);
+    }
+    
+    .notification-item.unread:hover {
+        background-color: rgba(63, 81, 181, 0.1);
+    }
+    
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    
+    .notification-icon.info-icon {
+        background-color: rgba(33, 150, 243, 0.15);
+        color: #2196f3;
+    }
+    
+    .notification-icon.update-icon {
+        background-color: rgba(63, 81, 181, 0.15);
+        color: var(--primary-color);
+    }
+    
+    .notification-icon.warning-icon {
+        background-color: rgba(255, 152, 0, 0.15);
+        color: var(--warning-color);
+    }
+    
+    .notification-icon.error-icon {
+        background-color: rgba(244, 67, 54, 0.15);
+        color: var(--danger-color);
+    }
+    
+    .notification-content {
+        flex: 1;
+    }
+    
+    .notification-message {
+        font-size: 15px;
+        line-height: 1.4;
+        margin-bottom: 5px;
+    }
+    
+    .notification-details {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 13px;
+        color: var(--gray-dark);
+    }
+    
+    .notification-time {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .notification-actions-menu {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .notification-action-btn {
+        background: none;
+        border: none;
+        color: var(--gray);
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .notification-action-btn:hover {
+        background-color: var(--gray-light);
+        color: var(--primary-color);
+    }
+    
+    .notification-status {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 10px;
+        background-color: transparent;
+        flex-shrink: 0;
+    }
+    
+    .notification-item.unread .notification-status {
+        background-color: var(--primary-color);
+    }
+    
+    .no-notifications {
+        text-align: center;
+        padding: 50px 20px;
+        color: var(--gray-dark);
+    }
+    
+    .no-notifications i {
+        font-size: 50px;
+        color: var(--gray);
+        margin-bottom: 15px;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="notification-page">
+        <div class="notification-page-header">
+            <h1><i class="fas fa-bell"></i> Thông báo</h1>
+            
+            <div class="notification-actions">
+                <div class="notification-filter">
+                    <select id="notificationFilter">
+                        <option value="all">Tất cả thông báo</option>
+                        <option value="unread">Chưa đọc</option>
+                        <option value="read">Đã đọc</option>
+                    </select>
+                </div>
+                
+                <button class="action-btn btn-primary" id="markAllReadBtn">
+                    <i class="fas fa-check-double"></i> Đánh dấu tất cả đã đọc
+                </button>
+            </div>
+        </div>
+        
+        <div class="notification-list" id="notificationList">
+            {% if notifications %}
+                {% for notification in notifications %}
+                <div class="notification-item {% if not notification.da_doc %}unread{% endif %}" data-id="{{ notification.ma_thongbao }}">
+                    <div class="notification-status"></div>
+                    <div class="notification-icon {{ get_notification_icon_class(notification.loai_thongbao) }}">
+                        <i class="{{ get_notification_icon(notification.loai_thongbao) }}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-message">{{ notification.noi_dung }}</div>
+                        <div class="notification-details">
+                            <div class="notification-time">
+                                <i class="far fa-clock"></i>
+                                {{ format_notification_time(notification.ngay_tao) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notification-actions-menu">
+                        <button class="notification-action-btn mark-read-btn" title="Đánh dấu đã đọc" {% if notification.da_doc %}style="display: none;"{% endif %}>
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="notification-action-btn delete-btn" title="Xóa thông báo">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-notifications">
+                    <i class="far fa-bell-slash"></i>
+                    <p>Không có thông báo nào.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if pagination and pagination.total_pages > 1 %}
+        <div class="pagination">
+            <button class="pagination-btn" {% if not pagination.has_prev %}disabled{% endif %} onclick="changePage({{ pagination.page - 1 }})">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            {% for page in range(1, pagination.total_pages + 1) %}
+                {% if page == pagination.page %}
+                    <button class="pagination-btn active">{{ page }}</button>
+                {% elif page == 1 or page == pagination.total_pages or (page >= pagination.page - 1 and page <= pagination.page + 1) %}
+                    <button class="pagination-btn" onclick="changePage({{ page }})">{{ page }}</button>
+                {% elif page == 2 or page == pagination.total_pages - 1 %}
+                    <div class="pagination-dots">...</div>
+                {% endif %}
+            {% endfor %}
+            
+            <button class="pagination-btn" {% if not pagination.has_next %}disabled{% endif %} onclick="changePage({{ pagination.page + 1 }})">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationList = document.getElementById('notificationList');
+        const notificationFilter = document.getElementById('notificationFilter');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+        
+        // Xử lý khi chọn bộ lọc
+        notificationFilter.addEventListener('change', function() {
+            const filterValue = this.value;
+            const currentUrl = new URL(window.location.href);
+            
+            // Cập nhật query parameter
+            currentUrl.searchParams.set('filter', filterValue);
+            currentUrl.searchParams.set('page', '1'); // Reset về trang 1
+            
+            // Chuyển hướng đến URL mới
+            window.location.href = currentUrl.toString();
+        });
+        
+        // Đặt giá trị ban đầu cho bộ lọc từ URL hiện tại
+        const urlParams = new URLSearchParams(window.location.search);
+        const filterParam = urlParams.get('filter');
+        if (filterParam) {
+            notificationFilter.value = filterParam;
+        }
+        
+        // Xử lý nút đánh dấu tất cả đã đọc
+        markAllReadBtn.addEventListener('click', function() {
+            // Gửi request đến API
+            fetch('/api/notifications/read-all', {
+                method: 'PUT'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cập nhật UI
+                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                        const markReadBtn = item.querySelector('.mark-read-btn');
+                        if (markReadBtn) {
+                            markReadBtn.style.display = 'none';
+                        }
+                    });
+                    
+                    // Hiển thị thông báo thành công
+                    notifySystem.success('Đã đánh dấu tất cả', 'Tất cả thông báo đã được đánh dấu là đã đọc.');
+                    
+                    // Cập nhật số thông báo trên header
+                    const notificationBadge = document.getElementById('notification-badge');
+                    if (notificationBadge) {
+                        notificationBadge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi đánh dấu tất cả đã đọc:', error);
+                notifySystem.error('Lỗi', 'Không thể đánh dấu tất cả thông báo là đã đọc.');
+            });
+        });
+        
+        // Xử lý sự kiện click vào thông báo
+        if (notificationList) {
+            notificationList.addEventListener('click', function(e) {
+                // Xử lý nút đánh dấu đã đọc
+                if (e.target.closest('.mark-read-btn')) {
+                    const btn = e.target.closest('.mark-read-btn');
+                    const item = btn.closest('.notification-item');
+                    const notificationId = item.dataset.id;
+                    
+                    markAsRead(notificationId, item);
+                    e.stopPropagation();
+                    return;
+                }
+                
+                // Xử lý nút xóa thông báo
+                if (e.target.closest('.delete-btn')) {
+                    const btn = e.target.closest('.delete-btn');
+                    const item = btn.closest('.notification-item');
+                    const notificationId = item.dataset.id;
+                    
+                    deleteNotification(notificationId, item);
+                    e.stopPropagation();
+                    return;
+                }
+                
+                // Xử lý click vào thông báo để xem chi tiết
+                const item = e.target.closest('.notification-item');
+                if (item) {
+                    const notificationId = item.dataset.id;
+                    viewNotificationDetail(notificationId, item);
+                }
+            });
+        }
+    });
+    
+    // Hàm đánh dấu thông báo là đã đọc
+    function markAsRead(notificationId, item) {
+        fetch(`/api/notifications/${notificationId}/read`, {
+            method: 'PUT'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Cập nhật UI
+                item.classList.remove('unread');
+                const markReadBtn = item.querySelector('.mark-read-btn');
+                if (markReadBtn) {
+                    markReadBtn.style.display = 'none';
+                }
+                
+                // Cập nhật số thông báo trên header
+                updateNotificationCount();
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi đánh dấu đã đọc:', error);
+        });
+    }
+    
+    // Hàm xóa thông báo
+    function deleteNotification(notificationId, item) {
+        if (!confirm('Bạn có chắc chắn muốn xóa thông báo này?')) {
+            return;
+        }
+        
+        fetch(`/api/notifications/${notificationId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Xóa thông báo khỏi UI
+                item.style.height = item.offsetHeight + 'px';
+                item.style.opacity = '1';
+                
+                // Animation khi xóa
+                setTimeout(() => {
+                    item.style.height = '0';
+                    item.style.opacity = '0';
+                    item.style.padding = '0';
+                    item.style.margin = '0';
+                    item.style.overflow = 'hidden';
+                    item.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(() => {
+                        item.remove();
+                        
+                        // Kiểm tra nếu không còn thông báo nào
+                        const remainingItems = document.querySelectorAll('.notification-item');
+                        if (remainingItems.length === 0) {
+                            const emptyState = `
+                                <div class="no-notifications">
+                                    <i class="far fa-bell-slash"></i>
+                                    <p>Không có thông báo nào.</p>
+                                </div>
+                            `;
+                            document.getElementById('notificationList').innerHTML = emptyState;
+                        }
+                    }, 300);
+                }, 10);
+                
+                // Hiển thị thông báo thành công
+                notifySystem.success('Đã xóa', 'Thông báo đã được xóa thành công.');
+                
+                // Cập nhật số thông báo trên header
+                updateNotificationCount();
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi xóa thông báo:', error);
+            notifySystem.error('Lỗi', 'Không thể xóa thông báo.');
+        });
+    }
+    
+    // Hàm xem chi tiết thông báo
+    function viewNotificationDetail(notificationId, item) {
+        // Nếu thông báo chưa đọc, đánh dấu là đã đọc
+        if (item.classList.contains('unread')) {
+            markAsRead(notificationId, item);
+        }
+        
+        // Lấy link từ data attribute nếu có
+        const link = item.dataset.link;
+        
+        if (link && link !== 'null' && link !== 'undefined') {
+            // Nếu có link, chuyển hướng đến trang chi tiết
+            window.location.href = link;
+        }
+        // Nếu không có link, có thể hiển thị modal hoặc không làm gì cả
+    }
+    
+    // Hàm cập nhật số lượng thông báo trên header
+    function updateNotificationCount() {
+        fetch('/api/notifications/count')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notification-badge');
+                const count = data.unread_count || 0;
+                
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi cập nhật số lượng thông báo:', error);
+            });
+    }
+    
+    // Hàm phân trang
+    function changePage(page) {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('page', page);
+        window.location.href = currentUrl.toString();
+    }
+</script>
+{% endblock %}

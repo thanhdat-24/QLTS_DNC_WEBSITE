@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}Danh sách tài sản - Hệ Thống Quản Lý Tài Sản DNC{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="page-title">
+            <h2>Danh sách tài sản</h2>
+            <p>Quản lý và theo dõi tài sản công ty</p>
+        </div>
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-{{ stats.it.icon }}"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.it.count }}</h3>
+                    <p>{{ stats.it.title }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-{{ stats.office.icon }}"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.office.count }}</h3>
+                    <p>{{ stats.office.title }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-{{ stats.furniture.icon }}"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.furniture.count }}</h3>
+                    <p>{{ stats.furniture.title }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-{{ stats.maintenance.icon }}"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ stats.maintenance.count }}</h3>
+                    <p>{{ stats.maintenance.title }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="search-filter-section">
+        <form action="{{ url_for('asset_routes.index') }}" method="GET" id="searchForm">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" name="search" value="{{ search }}" placeholder="Tìm kiếm tài sản theo tên, số seri, mã QR...">
+            </div>
+            <div class="filter-container">
+                <div class="filter-dropdown">
+                    <button type="button" class="filter-btn" id="loaiTsFilter">
+                        <i class="fas fa-tag"></i> 
+                        {% if selected_category == 'all' %}
+                            Loại tài sản
+                        {% else %}
+                            {% for category in categories %}
+                                {% if category.ma_loai_ts|string == selected_category %}
+                                    {{ category.ten_loai_ts }}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-menu" id="loaiTsMenu">
+                        <div class="filter-option {% if selected_category == 'all' %}selected{% endif %}" data-value="all">Tất cả</div>
+                        {% for category in categories %}
+                        <div class="filter-option {% if category.ma_loai_ts|string == selected_category %}selected{% endif %}" 
+                             data-value="{{ category.ma_loai_ts }}">{{ category.ten_loai_ts }}</div>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="category" id="categoryInput" value="{{ selected_category }}">
+                </div>
+                <div class="filter-dropdown">
+                    <button type="button" class="filter-btn" id="tinhTrangFilter">
+                        <i class="fas fa-info-circle"></i> 
+                        {% if selected_status == 'all' %}
+                            Tình trạng
+                        {% else %}
+                            {{ selected_status }}
+                        {% endif %}
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-menu" id="tinhTrangMenu">
+                        <div class="filter-option {% if selected_status == 'all' %}selected{% endif %}" data-value="all">Tất cả</div>
+                        <div class="filter-option {% if selected_status == 'Mới' %}selected{% endif %}" data-value="Mới">Mới</div>
+                        <div class="filter-option {% if selected_status == 'Đang hoạt động' %}selected{% endif %}" data-value="Đang hoạt động">Đang hoạt động</div>
+                        <div class="filter-option {% if selected_status == 'Cần kiểm tra' %}selected{% endif %}" data-value="Cần kiểm tra">Cần kiểm tra</div>
+                    </div>
+                    <input type="hidden" name="status" id="statusInput" value="{{ selected_status }}">
+                </div>
+                <button type="button" class="clear-filter" id="clearFilters">
+                    <i class="fas fa-times"></i> Xóa bộ lọc
+                </button>
+                <a href="#" class="add-asset-btn">
+                    <i class="fas fa-plus"></i> Thêm tài sản
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="product-list" id="productList">
+        {% for asset in assets %}
+        <div class="product-card" 
+            data-loai="{{ asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts if asset.chitietphieunhap and asset.chitietphieunhap.nhomtaisan and asset.chitietphieunhap.nhomtaisan.loaitaisan else 'Không xác định' }}" 
+            data-nhom="{{ asset.chitietphieunhap.nhomtaisan.ten_nhom_ts if asset.chitietphieunhap and asset.chitietphieunhap.nhomtaisan else 'Không xác định' }}" 
+            data-tinhtrang="{{ asset.tinh_trang_sp }}">
+            <div class="product-header">
+                <div class="product-info">
+                    <div class="product-title">{{ asset.ten_tai_san }}</div>
+                    <div class="product-subtitle">
+                        <i class="fas fa-barcode"></i> {{ asset.so_seri or 'Chưa có số seri' }}
+                        {% if asset.chitietphieunhap and asset.chitietphieunhap.nhomtaisan and asset.chitietphieunhap.nhomtaisan.loaitaisan %}
+                            <span class="badge 
+                                {% if asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts == 'Thiết bị IT' %}badge-it{% endif %}
+                                {% if asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts == 'Thiết bị Văn Phòng' %}badge-office{% endif %}
+                                {% if asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts == 'Thiết bị giảng dạy – nghiên cứu' %}badge-meeting{% endif %}
+                                {% if asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts == 'Vật tư tiêu hao' %}badge-mobile{% endif %}
+                                {% if asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts == 'Nội thất trường học' %}badge-furniture{% endif %}
+                                {% if asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts == 'Thiết bị văn phòng – điện máy' %}badge-furniture{% endif %}
+                                {% if asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts == 'Dụng cụ, công cụ văn phòng' %}badge-furniture{% endif %}
+                            ">{{ asset.chitietphieunhap.nhomtaisan.ten_nhom_ts }}</span>
+                        {% else %}
+                            <span class="badge badge-it">Không xác định</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="product-status-group">
+                    <span class="product-status 
+                        {% if asset.tinh_trang_sp == 'Mới' %}status-new{% endif %}
+                        {% if asset.tinh_trang_sp == 'Cần kiểm tra' %}status-checked{% endif %}
+                        {% if asset.tinh_trang_sp == 'Đang hoạt động' %}status-activate{% endif %}
+                        {% if asset.tinh_trang_sp == 'Hư hỏng' %}status-damaged{% endif %}
+                    ">{{ asset.tinh_trang_sp or 'Không xác định' }}</span>
+                    <button class="expand-btn" onclick="toggleProduct(this)">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="product-details">
+                <div class="details-content">
+                    <div class="specs-title">
+                        <i class="fas fa-microchip"></i> Thông tin cơ bản
+                    </div>
+                    <ul class="specs-list">
+                        <li class="spec-item">
+                            <div class="spec-name">Mã tài sản</div>
+                            <div class="spec-value">
+                                <span>{{ asset.ma_tai_san }}</span>
+                            </div>
+                        </li>
+                        {% if asset.ngay_su_dung_fmt %}
+                        <li class="spec-item">
+                            <div class="spec-name">Ngày sử dụng</div>
+                            <div class="spec-value">
+                                <span>{{ asset.ngay_su_dung_fmt }}</span>
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% if asset.han_bh_fmt %}
+                        <li class="spec-item">
+                            <div class="spec-name">Hạn bảo hành</div>
+                            <div class="spec-value">
+                                <span>{{ asset.han_bh_fmt }}</span>
+                                {% if asset.con_bao_hanh %}
+                                <span class="spec-status status-good">Còn BH</span>
+                                {% else %}
+                                <span class="spec-status status-damaged">Hết BH</span>
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% endif %}
+                        {% if asset.ghi_chu %}
+                        <li class="spec-item">
+                            <div class="spec-name">Ghi chú</div>
+                            <div class="spec-value">
+                                <span>{{ asset.ghi_chu }}</span>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <!-- Thay thế đoạn mã hiện có trong index.html -->
+
+<div class="product-actions">
+    <a href="{{ asset.ma_tai_san|asset_url }}" class="action-btn btn-primary">
+        <i class="fas fa-eye"></i> Xem chi tiết
+    </a>
+    <button class="action-btn btn-secondary">
+        <i class="fas fa-history"></i> Lịch sử
+    </button>
+    <button class="action-btn btn-qrcode">
+        <i class="fas fa-qrcode"></i> Mã QR
+    </button>
+</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if assets|length == 0 %}
+    <div id="emptyState" class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <div class="empty-text">Không tìm thấy tài sản phù hợp</div>
+        <a href="{{ url_for('asset_routes.index') }}" class="action-btn btn-primary">
+            <i class="fas fa-redo"></i> Xóa bộ lọc
+        </a>
+    </div>
+    {% endif %}
+
+    {% if pagination.total_pages > 1 %}
+    <div class="pagination">
+        <a href="{{ url_for('asset_routes.index', page=pagination.page-1, search=search, category=selected_category, status=selected_status) }}" 
+           class="pagination-btn {% if not pagination.has_prev %}disabled{% endif %}"
+           {% if not pagination.has_prev %}disabled{% endif %}>
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        
+        {% for p in range(1, pagination.total_pages + 1) %}
+            {% if p == 1 or p == pagination.total_pages or (p >= pagination.page - 1 and p <= pagination.page + 1) %}
+                <a href="{{ url_for('asset_routes.index', page=p, search=search, category=selected_category, status=selected_status) }}" 
+                   class="pagination-btn {% if p == pagination.page %}active{% endif %}">{{ p }}</a>
+            {% elif p == pagination.page - 2 or p == pagination.page + 2 %}
+                <span class="pagination-dots">...</span>
+            {% endif %}
+        {% endfor %}
+        
+        <a href="{{ url_for('asset_routes.index', page=pagination.page+1, search=search, category=selected_category, status=selected_status) }}" 
+           class="pagination-btn {% if not pagination.has_next %}disabled{% endif %}"
+           {% if not pagination.has_next %}disabled{% endif %}>
+            <i class="fas fa-chevron-right"></i>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Xử lý filter dropdown
+        document.querySelectorAll('.filter-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const menu = this.closest('.filter-menu');
+                const inputId = menu.id === 'loaiTsMenu' ? 'categoryInput' : 'statusInput';
+                document.getElementById(inputId).value = this.dataset.value;
+                document.getElementById('searchForm').submit();
+            });
+        });
+        
+        // Xử lý clear filter
+        document.getElementById('clearFilters').addEventListener('click', function() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryInput').value = 'all';
+            document.getElementById('statusInput').value = 'all';
+            document.getElementById('searchForm').submit();
+        });
+    });
+</script>
+{% endblock %}

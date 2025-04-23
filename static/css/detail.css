@@ -1,0 +1,753 @@
+.asset-info {
+    padding: 20px;
+}
+
+.asset-title {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--gray-light);
+    padding-bottom: 10px;
+}
+
+.asset-title h3 {
+    font-size: 18px;
+    color: var(--primary-color);
+}
+
+.asset-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.asset-detail-item {
+    display: flex;
+    gap: 10px;
+}
+
+.grid-full {
+    grid-column: 1 / -1;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: var(--gray-dark);
+    min-width: 150px;
+}
+
+.detail-value {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.asset-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.empty-spec {
+    text-align: center;
+    padding: 40px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    color: var(--gray-dark);
+}
+
+.empty-spec-icon {
+    font-size: 48px;
+    color: var(--gray);
+    margin-bottom: 20px;
+}
+
+.empty-spec p {
+    margin-bottom: 20px;
+}
+
+.spec-tabs {
+    width: 100%;
+}
+
+.spec-tab-buttons {
+    display: flex;
+    border-bottom: 1px solid var(--gray-light);
+    margin-bottom: 15px;
+}
+
+.spec-tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--gray-dark);
+    transition: var(--transition);
+}
+
+.spec-tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.spec-tab-btn:hover:not(.active) {
+    color: var(--primary-dark);
+    background-color: var(--gray-light);
+}
+
+.spec-tab-content {
+    display: none;
+}
+
+.spec-tab-content.active {
+    display: block;
+}
+
+/* Specifications Grid with Improved Layout */
+.specs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 10px;
+    max-height: 600px; /* Add a max height */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.spec-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--gray-light);
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensure full height */
+}
+
+.spec-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.spec-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.spec-card-header .spec-name {
+    font-weight: 500;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+.spec-card-body {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.spec-value-display {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.spec-value-label {
+    font-weight: 500;
+    color: var(--gray-dark);
+    margin-right: 5px;
+}
+
+.spec-value-text {
+    font-size: 18px;
+    font-weight: 500;
+    margin-right: auto;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.spec-status {
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-good {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+}
+/* Tình trạng Đang sử dụng - Màu xanh dương */
+.status-using {
+    background-color: rgba(0, 123, 255, 0.15);
+    color: #0d6efd;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+/* Tình trạng Cần kiểm tra - Màu vàng */
+.status-check {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+/* Tình trạng Hư hỏng - Màu đỏ */
+.status-damaged {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* Thêm hiệu ứng hover */
+.product-status:hover {
+    filter: brightness(0.95);
+}
+
+/* Thêm animation cho status */
+@keyframes statusPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.product-status.status-damaged {
+    animation: statusPulse 2s infinite;
+}
+
+.spec-card-footer {
+    padding: 10px 15px;
+    border-top: 1px solid var(--gray-light);
+    background-color: #f9f9f9;
+}
+
+.spec-updated {
+    font-size: 12px;
+    color: var(--gray);
+}
+
+/* Scrollbar for specification grid */
+.specs-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.specs-grid::-webkit-scrollbar-track {
+    background: var(--gray-light);
+    border-radius: 10px;
+}
+
+.specs-grid::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+/* Rest of the existing CSS remains the same... */
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.edit-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.edit-form-group label {
+    font-weight: 500;
+    color: var(--gray-dark);
+    font-size: 14px;
+}
+
+.edit-input, .edit-select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-light);
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+    justify-content: flex-end;
+}
+
+.save-btn, .cancel-btn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.save-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.save-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.cancel-btn {
+    background-color: var(--gray-light);
+    color: var(--gray-dark);
+}
+
+.cancel-btn:hover {
+    background-color: var(--gray);
+}
+
+.edit-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.edit-btn:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.group-spec-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.group-spec-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.group-spec-item i {
+    color: var(--primary-color);
+    width: 20px;
+    text-align: center;
+}
+
+.group-spec-item.description {
+    margin-top: 5px;
+    font-style: italic;
+    color: var(--gray-dark);
+}
+
+.group-spec .spec-card-header {
+    background-color: var(--secondary-color, #6c757d);
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    width: 500px;
+    max-width: 90%;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.close {
+    font-size: 24px;
+    color: var(--gray);
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--gray-dark);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--gray-light);
+    border-radius: var(--border-radius-sm);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+    .asset-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .specs-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 576px) {
+    .specs-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* Specification Search Styles */
+.spec-search-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.search-input-wrapper {
+    flex-grow: 1;
+    position: relative;
+}
+
+#spec-search-input {
+    width: 100%;
+    padding: 10px 40px 10px 15px;
+    border: 1px solid var(--gray-light);
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray);
+    pointer-events: none;
+}
+
+.search-results-count {
+    color: var(--gray-dark);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.spec-card.hidden {
+    display: none !important;
+}
+
+.spec-card.highlight .spec-name,
+.spec-card.highlight .spec-value-text {
+    background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.1);
+    border-radius: 3px;
+}
+
+/* Responsive adjustments for search */
+@media (max-width: 576px) {
+    .spec-search-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-results-count {
+        text-align: center;
+        margin-top: 5px;
+    }
+}
+/* Bảng thông số kỹ thuật */
+.specs-table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.specs-table thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.specs-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 14px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.specs-table tbody tr {
+    border-bottom: 1px solid var(--gray-light);
+    transition: all 0.2s ease;
+}
+
+.specs-table tbody tr:hover {
+    background-color: rgba(63, 81, 181, 0.05);
+}
+
+.specs-table td {
+    padding: 12px 15px;
+    vertical-align: middle;
+}
+
+.column-name {
+    width: 25%;
+}
+
+.column-value {
+    width: 30%;
+}
+
+.column-status {
+    width: 15%;
+}
+
+.column-updated {
+    width: 20%;
+}
+
+.column-actions {
+    width: 10%;
+}
+
+.spec-name {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.spec-value {
+    position: relative;
+}
+
+.spec-value-text {
+    font-weight: normal;
+}
+
+.spec-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.spec-updated {
+    font-size: 12px;
+    color: var(--gray-dark);
+}
+
+.edit-row {
+    background-color: #f8f9fa;
+}
+
+.edit-form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px;
+    align-items: flex-end;
+}
+
+.edit-form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.edit-form-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--gray-dark);
+    margin-bottom: 5px;
+}
+
+.edit-input, .edit-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--gray-light);
+    border-radius: var(--border-radius-sm);
+    font-size: 14px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.save-btn, .cancel-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.save-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.cancel-btn {
+    background-color: var(--gray-light);
+    color: var(--gray-dark);
+}
+
+.spec-actions {
+    text-align: center;
+}
+
+.edit-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--gray-light);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--primary-color);
+    transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Responsive cho bảng */
+@media (max-width: 768px) {
+    .specs-table thead {
+        display: none;
+    }
+    
+    .specs-table, .specs-table tbody, .specs-table tr, .specs-table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .specs-table tr {
+        margin-bottom: 15px;
+        border: 1px solid var(--gray-light);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+    }
+    
+    .specs-table td {
+        text-align: right;
+        padding: 10px 15px;
+        position: relative;
+        padding-left: 50%;
+    }
+    
+    .specs-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+    
+    .edit-form-inline {
+        flex-direction: column;
+    }
+    
+    .edit-row td {
+        padding: 0;
+        text-align: left;
+    }
+    
+    .edit-row td:before {
+        display: none;
+    }
+}
+
+/* Hiệu ứng khi tìm kiếm */
+.specs-table tbody tr.highlight {
+    background-color: rgba(63, 81, 181, 0.1);
+}
+
+.specs-table tbody tr.hidden {
+    display: none;
+}
+
+/* Cải thiện định dạng status */
+.status-good {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #28a745;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.status-check {
+    background-color: rgba(255, 152, 0, 0.15);
+    color: #ffc107;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.status-damaged {
+    background-color: rgba(244, 67, 54, 0.15);
+    color: #dc3545;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}

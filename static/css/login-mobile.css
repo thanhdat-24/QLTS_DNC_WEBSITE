@@ -1,0 +1,49 @@
+/* CSS dành cho màn hình di động */
+@media (max-width: 768px) {
+    .login-container {
+        max-width: 100%;
+        margin: 0 15px;
+        padding: 25px 15px;
+    }
+    
+    .login-logo img {
+        font-size: 40px;
+    }
+    
+    .login-title {
+        font-size: 22px;
+    }
+    
+    .form-control {
+        padding: 10px 12px;
+    }
+    
+    .btn-login {
+        padding: 11px;
+    }
+}
+
+/* CSS dành cho màn hình siêu nhỏ */
+@media (max-width: 320px) {
+    .login-container {
+        padding: 20px 10px;
+    }
+    
+    .login-logo i {
+        font-size: 35px;
+    }
+    
+    .login-title {
+        font-size: 20px;
+    }
+    
+    .form-control {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+    
+    .btn-login {
+        padding: 10px;
+        font-size: 15px;
+    }
+}

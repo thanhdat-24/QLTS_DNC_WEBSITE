@@ -1,0 +1,396 @@
+/* CSS Responsive toàn diện cho trang Quét QR - tương thích với cả desktop và mobile */
+
+/* Biến và giá trị cơ bản */
+:root {
+    --scanner-mobile-ratio: 4/3;      /* Tỷ lệ cho thiết bị di động */
+    --scanner-desktop-ratio: 16/10;   /* Tỷ lệ cho thiết bị desktop */
+    --scanner-desktop-width: 600px;   /* Chiều rộng tối đa trên desktop */
+    --scanner-desktop-height: 400px;  /* Chiều cao tối đa trên desktop */
+}
+
+/* Container chính cho scanner - thiết kế responsive */
+.scanner-container {
+    position: relative;
+    width: 100%;
+    margin: 0 auto 20px;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: #000;
+    max-width: var(--scanner-desktop-width);
+}
+
+/* Video stream - thiết kế khác nhau cho desktop và mobile */
+#qr-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Khung quét */
+.scanner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Kích thước khung quét và hiệu ứng */
+.scanner-frame {
+    position: relative;
+    width: 60%;
+    height: 60%;
+    max-width: 280px;
+    max-height: 280px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
+}
+
+/* Đường quét di chuyển */
+.scanner-frame::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    animation: scanAnimation 2s infinite;
+    box-shadow: 0 0 8px var(--primary-color);
+}
+
+/* Các góc khung quét */
+.scanner-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: #fff;
+    border-style: solid;
+    border-width: 3px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.scanner-corner:nth-child(1) {
+    top: -3px;
+    left: -3px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.scanner-corner:nth-child(2) {
+    top: -3px;
+    right: -3px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.scanner-corner:nth-child(3) {
+    bottom: -3px;
+    right: -3px;
+    border-left: none;
+    border-top: none;
+}
+
+.scanner-corner:nth-child(4) {
+    bottom: -3px;
+    left: -3px;
+    border-right: none;
+    border-top: none;
+}
+
+/* Cải thiện hướng dẫn */
+.instructions {
+    margin: 15px auto;
+    padding: 15px;
+    background-color: rgba(63, 81, 181, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    max-width: 600px;
+}
+
+.instructions i {
+    font-size: 18px;
+    color: var(--primary-color);
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+/* Điều chỉnh phần điều khiển camera */
+.scanner-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px auto;
+    max-width: 600px;
+}
+
+.btn-switch-camera, .btn-retry {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 16px;
+    height: 46px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+    min-width: 120px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-switch-camera:hover, .btn-retry:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-switch-camera i, .btn-retry i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.btn-switch-camera.active {
+    background-color: var(--primary-dark);
+}
+
+/* Cải thiện trạng thái camera */
+.camera-status {
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    margin: 15px auto;
+    font-size: 14px;
+    max-width: 600px;
+    border: 1px solid #eee;
+}
+
+/* Cải thiện thông báo lỗi */
+.error-message {
+    padding: 15px;
+    margin: 15px auto;
+    background-color: #ffebee;
+    border-left: 4px solid #f44336;
+    border-radius: 8px;
+    color: #d32f2f;
+    max-width: 600px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.error-message p {
+    margin: 5px 0;
+}
+
+.browser-info {
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: #757575;
+    padding-top: 5px;
+    border-top: 1px dashed #ddd;
+}
+
+/* Loading indicator */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+.ios-note {
+    border-top: 1px dashed #ddd;
+    margin-top: 15px;
+    padding-top: 15px;
+}
+
+/* Hiệu ứng animations */
+@keyframes scanAnimation {
+    0% {
+        top: 10%;
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        top: 90%;
+        opacity: 0.5;
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Hiệu ứng cho nút bấm */
+.button-pressed {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
+/* ======= ĐIỀU CHỈNH RESPONSIVE ======= */
+
+/* Desktop styles - đảm bảo tỷ lệ video đẹp */
+@media (min-width: 769px) {
+    .scanner-container {
+        height: 400px;
+        max-height: 60vh;
+    }
+    
+    .scanner-frame {
+        width: 50%;
+        height: 70%;
+    }
+    
+    .btn-switch-camera, .btn-retry {
+        flex: 0 1 auto;
+        min-width: 150px;
+    }
+    
+    .scanner-controls {
+        justify-content: center;
+        gap: 15px;
+    }
+    
+    .instructions, .error-message, .camera-status {
+        font-size: 15px;
+    }
+}
+
+/* Tablet styles */
+@media (min-width: 577px) and (max-width: 768px) {
+    .scanner-container {
+        aspect-ratio: 3/2;
+        max-height: 50vh;
+    }
+    
+    .scanner-frame {
+        width: 60%;
+        height: 65%;
+    }
+    
+    .btn-switch-camera, .btn-retry {
+        min-width: 130px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 576px) {
+    .scanner-container {
+        aspect-ratio: var(--scanner-mobile-ratio);
+        border-radius: 8px;
+    }
+    
+    .scanner-frame {
+        width: 80%;
+        height: 80%;
+    }
+    
+    .dashboard-header {
+        padding: 15px 0;
+    }
+    
+    .page-title h2 {
+        font-size: 20px;
+    }
+    
+    .page-title p {
+        font-size: 14px;
+    }
+    
+    .btn-switch-camera, .btn-retry {
+        padding: 10px 12px;
+        height: 42px;
+        font-size: 13px;
+        flex: 1 1 0;
+        min-width: 0;
+    }
+    
+    .instructions, .error-message, .camera-status {
+        font-size: 13px;
+        padding: 12px;
+    }
+    
+    .scanner-controls {
+        gap: 8px;
+    }
+}
+
+/* Hỗ trợ màn hình siêu nhỏ */
+@media (max-width: 360px) {
+    .scanner-container {
+        aspect-ratio: 1/1;
+    }
+    
+    .scanner-frame {
+        width: 85%;
+        height: 85%;
+    }
+    
+    .scanner-corner {
+        width: 15px;
+        height: 15px;
+    }
+    
+    .btn-switch-camera, .btn-retry {
+        font-size: 12px;
+        padding: 8px 10px;
+        height: 38px;
+    }
+    
+    .btn-switch-camera i, .btn-retry i {
+        font-size: 14px;
+    }
+}
+
+/* Hỗ trợ màn hình rộng */
+@media (min-width: 1200px) {
+    .scanner-container {
+        height: 450px;
+    }
+}
+
+/* Hỗ trợ màn hình theo hướng ngang trên mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .scanner-container {
+        aspect-ratio: 16/9;
+        height: auto;
+        max-height: 50vh;
+    }
+    
+    .scanner-frame {
+        width: 50%;
+        height: 80%;
+    }
+    
+    .scanner-controls {
+        margin-top: 10px;
+    }
+}

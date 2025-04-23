@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Thông tin cá nhân - Hệ Thống Quản Lý Tài Sản DNC{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="page-title">
+            <h2>Thông tin tài khoản</h2>
+            <p>Quản lý thông tin cá nhân</p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="product-card" style="max-width: 600px; margin: 0 auto 30px;">
+        <div class="product-header" style="padding: 20px;">
+            <div class="product-info">
+                <div class="product-title" style="font-size: 20px; margin-bottom: 10px;">Thông tin người dùng</div>
+                <div class="product-subtitle">
+                    <i class="fas fa-user"></i> {{ user.ten_nv if user.ten_nv else user.ten_tai_khoan }}
+                </div>
+            </div>
+            <div class="product-status-group">
+                <span class="product-status status-new">
+                    {{ user.ten_loai_tk if user.ten_loai_tk else 'Người dùng' }}
+                </span>
+            </div>
+        </div>
+        <div class="details-content" style="padding: 20px;">
+            <div class="specs-title">
+                <i class="fas fa-info-circle"></i> Thông tin chi tiết
+            </div>
+            <ul class="specs-list" style="margin-top: 15px;">
+                <li class="spec-item">
+                    <div class="spec-name">ID tài khoản</div>
+                    <div class="spec-value">
+                        <span>{{ user.ma_tk }}</span>
+                    </div>
+                </li>
+                <li class="spec-item">
+                    <div class="spec-name">Tên đăng nhập</div>
+                    <div class="spec-value">
+                        <span>{{ user.ten_tai_khoan }}</span>
+                    </div>
+                </li>
+                <li class="spec-item">
+                    <div class="spec-name">Vai trò</div>
+                    <div class="spec-value">
+                        <span>{{ user.ten_loai_tk if user.ten_loai_tk else 'Không có' }}</span>
+                    </div>
+                </li>
+                {% if user.ten_nv %}
+                <li class="spec-item">
+                    <div class="spec-name">Tên nhân viên</div>
+                    <div class="spec-value">
+                        <span>{{ user.ten_nv }}</span>
+                    </div>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="product-actions">
+            <a href="#" class="action-btn btn-secondary">
+                <i class="fas fa-key"></i> Đổi mật khẩu
+            </a>
+            <a href="{{ url_for('auth_routes.logout') }}" class="action-btn btn-primary">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

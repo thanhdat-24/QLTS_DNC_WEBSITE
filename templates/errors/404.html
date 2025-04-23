@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Không tìm thấy trang - 404{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align: center; padding: 100px 20px;">
+    <div style="font-size: 100px; color: var(--gray);">
+        <i class="fas fa-search"></i>
+    </div>
+    <h1 style="font-size: 36px; margin-bottom: 20px;">404 - Không tìm thấy trang</h1>
+    <p style="font-size: 18px; color: var(--gray-dark); margin-bottom: 30px;">
+        Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.
+    </p>
+    <a href="{{ url_for('asset_routes.index') }}" class="action-btn btn-primary" style="display: inline-flex;">
+        <i class="fas fa-home"></i> Quay lại trang chủ
+    </a>
+</div>
+{% endblock %}

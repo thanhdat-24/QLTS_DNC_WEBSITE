@@ -1,0 +1,68 @@
+    /* CSS bổ sung cho form chỉnh sửa tài sản */
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--gray-light);
+        border-radius: var(--border-radius-sm);
+        font-size: 14px;
+        transition: border-color 0.2s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    /* Thông báo lỗi */
+    .error-message {
+        display: none;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    
+    /* Modal chỉnh sửa rộng hơn */
+    #edit-asset-modal .modal-content {
+        width: 600px;
+        max-width: 95%;
+    }
+    
+    /* Nút lưu thay đổi */
+    #save-asset-btn {
+        padding: 8px 20px;
+    }
+    
+    /* Hiệu ứng loading cho nút */
+    #save-asset-btn:disabled {
+        opacity: 0.7;
+        cursor: wait;
+    }
+    
+    /* Media query cho thiết bị di động */
+    @media (max-width: 576px) {
+        #edit-asset-modal .modal-content {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            border-radius: 0;
+        }
+        
+        #edit-asset-modal .modal-header {
+            padding: 15px;
+        }
+        
+        #edit-asset-modal .modal-body {
+            padding: 15px;
+            overflow-y: auto;
+            max-height: calc(100vh - 150px);
+        }
+        
+        .form-actions {
+            padding-bottom: 20px;
+        }
+    }

@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Quét mã QR - Hệ Thống Quản Lý Tài Sản{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scan.css') }}">
+<style>
+    /* CSS bổ sung để đảm bảo layout thống nhất */
+    body {
+        background-color: var(--gray-light);
+    }
+    
+    .main-content {
+        padding-bottom: 30px;
+    }
+    
+    /* Container wrapper cho nội dung chính */
+    .scan-content-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+    
+    /* Đảm bảo dashboard header có kích thước phù hợp trên cả desktop và mobile */
+    @media (min-width: 769px) {
+        .dashboard-header {
+            padding: 25px 0;
+        }
+        
+        .page-title h2 {
+            font-size: 24px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 15px 0;
+            margin-bottom: 10px;
+        }
+        
+        .page-title h2 {
+            font-size: 20px;
+        }
+        
+        .container {
+            padding: 0 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="page-title">
+            <h2><i class="fas fa-qrcode"></i> Quét mã QR tài sản</h2>
+            <p>Hướng camera vào mã QR để xem thông tin tài sản</p>
+        </div>
+    </div>
+</div>
+
+<div class="scan-content-wrapper">
+    <div class="instructions">
+        <i class="fas fa-info-circle"></i> 
+        <span>Hướng camera vào mã QR của tài sản. Đảm bảo mã QR nằm trong khung quét trên màn hình.</span>
+    </div>
+    
+    <div id="error-container" style="display: none;" class="error-message">
+        <p id="error-text">Đã xảy ra lỗi khi kết nối với camera.</p>
+        <p class="browser-info" id="browser-info"></p>
+    </div>
+    
+    <div class="scanner-container">
+        <video id="qr-video" playsinline autoplay muted></video>
+        <div class="scanner-overlay">
+            <div class="scanner-frame">
+                <div class="scanner-corner"></div>
+                <div class="scanner-corner"></div>
+                <div class="scanner-corner"></div>
+                <div class="scanner-corner"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="camera-status" id="cameraStatus">
+        Đang khởi tạo camera...
+    </div>
+    
+    <div class="scanner-controls">
+        <button class="btn-switch-camera" id="switchCamera">
+            <i class="fas fa-sync-alt"></i> Đổi camera
+        </button>
+        <button class="btn-switch-camera" id="toggleFlash" style="display:none;">
+            <i class="fas fa-bolt"></i> Đèn flash
+        </button>
+        <button class="btn-switch-camera" id="retryCamera">
+            <i class="fas fa-redo"></i> Thử lại
+        </button>
+    </div>
+    
+    <!-- Thêm phần chỉ dẫn cho desktop - hiển thị khi cần thiết -->
+    <div id="desktop-guide" style="display: none;" class="instructions desktop-only">
+        <i class="fas fa-desktop"></i>
+        <span>Trên máy tính, bạn có thể sử dụng webcam để quét mã QR hoặc tải lên hình ảnh có chứa mã QR.</span>
+    </div>
+</div>
+
+<div class="loading-container" id="loadingIndicator" style="display: none;">
+    <div class="loading-spinner"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+<script>
+    // Kiểm tra và hiển thị hướng dẫn dành riêng cho desktop
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth >= 768) {
+            const desktopGuide = document.getElementById('desktop-guide');
+            if (desktopGuide) {
+                desktopGuide.style.display = 'flex';
+            }
+        }
+        
+        // Điều chỉnh tỷ lệ khung hình dựa vào loại thiết bị
+        window.addEventListener('resize', function() {
+            adjustContainerSize();
+        });
+        
+        adjustContainerSize();
+    });
+    
+    // Hàm điều chỉnh kích thước container dựa vào thiết bị
+    function adjustContainerSize() {
+        const container = document.querySelector('.scanner-container');
+        const frame = document.querySelector('.scanner-frame');
+        
+        if (!container || !frame) return;
+        
+        if (window.innerWidth >= 768) {
+            // Desktop
+            container.style.aspectRatio = 'auto';
+        } else {
+            // Mobile
+            if (window.innerWidth <= 360) {
+                frame.style.width = '85%';
+                frame.style.height = '85%';
+            } else {
+                frame.style.width = '80%';
+                frame.style.height = '80%';
+            }
+        }
+    }
+</script>
+<script src="{{ url_for('static', filename='js/qr-scanner.js') }}"></script>
+{% endblock %}

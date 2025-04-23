@@ -1,0 +1,310 @@
+/* CSS cho dropdown thông báo */
+.notifications {
+    position: relative;
+    cursor: pointer;
+}
+
+.notifications i {
+    font-size: 20px;
+    color: var(--gray-dark);
+    transition: color 0.2s ease;
+}
+
+.notifications:hover i {
+    color: var(--primary-color);
+}
+
+.notifications .badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--danger-color);
+    color: white;
+    font-size: 11px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Dropdown container */
+.notification-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: -10px;
+    width: 320px;
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    display: none;
+    overflow: hidden;
+    transform: translateY(-10px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.notification-dropdown.active {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Dropdown header */
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--gray-light);
+    background-color: #f8f9fa;
+}
+
+.notification-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.mark-all-read {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.mark-all-read:hover {
+    background-color: rgba(63, 81, 181, 0.1);
+}
+
+/* Dropdown content */
+.notification-content {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+/* Loading state */
+.notification-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 15px;
+    color: var(--gray-dark);
+    gap: 10px;
+}
+
+.notification-loading i {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+/* Empty state */
+.notification-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 15px;
+    color: var(--gray-dark);
+    gap: 10px;
+    text-align: center;
+}
+
+.notification-empty i {
+    font-size: 32px;
+    color: var(--gray);
+    margin-bottom: 5px;
+}
+
+/* Error state */
+.notification-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 15px;
+    color: var(--danger-color);
+    gap: 10px;
+    text-align: center;
+}
+
+.notification-error i {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+/* Notification item */
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border-bottom: 1px solid var(--gray-light);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: rgba(63, 81, 181, 0.05);
+}
+
+.notification-item.unread:hover {
+    background-color: rgba(63, 81, 181, 0.1);
+}
+
+.notification-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item.unread::before {
+    background-color: var(--primary-color);
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+/* Icon styles by notification type */
+.notification-icon.info-icon {
+    background-color: rgba(33, 150, 243, 0.15);
+    color: #2196f3;
+}
+
+.notification-icon.update-icon {
+    background-color: rgba(63, 81, 181, 0.15);
+    color: var(--primary-color);
+}
+
+.notification-icon.warning-icon {
+    background-color: rgba(255, 152, 0, 0.15);
+    color: var(--warning-color);
+}
+
+.notification-icon.error-icon {
+    background-color: rgba(244, 67, 54, 0.15);
+    color: var(--danger-color);
+}
+
+.notification-details {
+    flex: 1;
+}
+
+.notification-message {
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 5px;
+    color: var(--dark-color);
+}
+
+.notification-time {
+    font-size: 12px;
+    color: var(--gray-dark);
+}
+
+.notification-mark-read {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.notification-item:hover .notification-mark-read {
+    visibility: visible;
+    opacity: 1;
+}
+
+.notification-mark-read:hover {
+    background-color: var(--gray-light);
+    color: var(--primary-color);
+}
+
+/* Dropdown footer */
+.notification-footer {
+    padding: 12px 15px;
+    text-align: center;
+    border-top: 1px solid var(--gray-light);
+    background-color: #f8f9fa;
+}
+
+.view-all {
+    color: var(--primary-color);
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.view-all:hover {
+    text-decoration: underline;
+}
+
+/* Custom scrollbar for notification content */
+.notification-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-content::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+.notification-content::-webkit-scrollbar-thumb {
+    background-color: var(--gray);
+    border-radius: 10px;
+}
+
+/* Animation for new notifications */
+@keyframes notification-pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.notifications .badge.new {
+    animation: notification-pulse 1s ease-in-out;
+}

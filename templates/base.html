@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hệ Thống Quản Lý Tài Sản{% endblock %}</title>
+    <!-- Thêm favicon cho tab trình duyệt -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo/logo_dnc_single.png') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/notification-dropdown.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Header Section -->
+    <header class="main-header">
+        <div class="header-container">
+            <!-- Hamburger menu sẽ được thêm vào bằng JavaScript -->
+            <div class="logo">
+                <img src="{{ url_for('static', filename='img/logo/logo_dnc.jpg') }}" alt="Logo" class="logo-img">
+            </div>
+            <nav class="main-nav">
+                <!-- Nav header sẽ được thêm vào bằng JavaScript -->
+                <ul>
+                    <li class="{% if request.path == '/' %}active{% endif %}"><a href="{{ url_for('asset_routes.index') }}"><i class="fas fa-home"></i> Trang chủ</a></li>
+                    <li class="{% if request.path == '/scan' %}active{% endif %}"><a href="{{ url_for('asset_routes.scan_qr') }}"><i class="fas fa-qrcode"></i> Quét QR</a></li>
+                    <li><a href="#"><i class="fas fa-plus-circle"></i> Thêm tài sản</a></li>
+                    <li><a href="#"><i class="fas fa-chart-bar"></i> Báo cáo</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <div class="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" id="notification-badge">0</span>
+                    <!-- Dropdown thông báo sẽ được thêm vào bởi JavaScript -->
+                </div>
+                {% if is_authenticated %}
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <img src="{{ url_for('static', filename='img/icon/technologist_avarta_.png') }}" alt="User Avatar">
+                    <span>{{ current_user.ten_nv if current_user.ten_nv else current_user.ten_tai_khoan }}</span>
+                    <i class="fas fa-chevron-down"></i>
+                    <!-- User dropdown menu -->
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="{{ url_for('auth_routes.profile') }}">
+                            <i class="fas fa-user"></i> Thông tin cá nhân
+                        </a>
+                        <a href="#">
+                            <i class="fas fa-cog"></i> Cài đặt
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('auth_routes.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{{ url_for('auth_routes.login') }}" class="action-btn btn-primary" style="margin-left: 0;">
+                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile menu overlay sẽ được thêm vào bằng JavaScript -->
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-messages" style="display: none;">
+                {% for category, message in messages %}
+                    <div class="flash-message" data-category="{{ category }}" data-message="{{ message }}"></div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="{{ url_for('static', filename='img/logo/logo_dnc.jpg') }}" alt="Logo" class="logo-img">
+                    <p>Hệ thống quản lý tài sản DNC University</p>
+                </div>
+                <div class="footer-links">
+                    <h3>Liên kết nhanh</h3>
+                    <ul>
+                        <li><a href="{{ url_for('asset_routes.index') }}">Trang chủ</a></li>
+                        <li><a href="#">Thêm tài sản</a></li>
+                        <li><a href="#">Báo cáo</a></li>
+                        <li><a href="#">Hướng dẫn</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Liên hệ</h3>
+                    <p><i class="fas fa-envelope"></i>dnc@moet.edu.vn</p>
+                    <p><i class="fas fa-phone"></i>(0292) 3 798 222 - 3 798 668</p>
+                    <p><i class="fas fa-map-marker-alt"></i>168, Nguyễn Văn Cừ (nối dài), P. An Bình, Q. Ninh Kiều, TP. Cần Thơ</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>CopyRight &copy; 2025 Trường Đại học Nam Cần Thơ <a href="#">DNC</a></p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                    <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Thêm style cho dropdown menu -->
+    <style>
+        .user-profile {
+            position: relative;
+        }
+        
+        .user-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background-color: white;
+            box-shadow: var(--shadow-md);
+            border-radius: var(--border-radius);
+            width: 200px;
+            padding: 10px 0;
+            display: none;
+            z-index: 100;
+        }
+        
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            color: var(--dark-color);
+            transition: var(--transition);
+        }
+        
+        .user-dropdown a:hover {
+            background-color: var(--gray-light);
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--gray-light);
+            margin: 5px 0;
+        }
+    </style>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile-menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notification-system.js') }}"></script>
+    <!-- User dropdown script -->
+    <script>
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            
+            // Add event listener to close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.user-profile')) {
+                    dropdown.style.display = 'none';
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Flash message handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            const notifySystem = new NotificationSystem();
+            
+            flashMessages.forEach(function(flash) {
+                const category = flash.dataset.category;
+                const message = flash.dataset.message;
+                
+                if (category === 'success') {
+                    notifySystem.success('Thành công', message);
+                } else if (category === 'error') {
+                    notifySystem.error('Lỗi', message);
+                } else if (category === 'warning') {
+                    notifySystem.warning('Cảnh báo', message);
+                } else {
+                    notifySystem.info('Thông báo', message);
+                }
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tải số lượng thông báo chưa đọc
+            loadNotificationCount();
+            
+            // Cài đặt để tự động làm mới số lượng thông báo mỗi 5 phút
+            setInterval(loadNotificationCount, 5 * 60 * 1000);
+        });
+        
+        // Hàm tải số lượng thông báo
+        function loadNotificationCount() {
+            fetch('/api/notifications/count')
+                .then(response => response.json())
+                .then(data => {
+                    // Cập nhật số thông báo
+                    const badge = document.getElementById('notification-badge');
+                    const count = data.unread_count || 0;
+                    
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải số lượng thông báo:', error);
+                });
+        }
+    </script>
+</body>
+</html>

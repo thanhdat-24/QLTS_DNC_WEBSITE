@@ -1,0 +1,434 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ asset.ten_tai_san }} - Chi tiết tài sản{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="page-title">
+            <h2>{{ asset.ten_tai_san }}</h2>
+            <p>
+                <a href="{{ url_for('asset_routes.index') }}">Danh sách tài sản</a> / 
+                {% if asset.chitietphieunhap and asset.chitietphieunhap.nhomtaisan and asset.chitietphieunhap.nhomtaisan.loaitaisan %}
+                    {{ asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts }} / 
+                    {{ asset.chitietphieunhap.nhomtaisan.ten_nhom_ts }}
+                {% else %}
+                    Không xác định loại tài sản
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div id="asset-data" 
+         data-asset-id="{{ asset.ma_tai_san }}"
+         {% if encoded_id is defined %}
+         data-encoded-id="{{ encoded_id }}"
+         {% endif %}
+         style="display: none;">
+    </div>
+
+    <div class="search-filter-section">
+        <div class="asset-info">
+            <div class="asset-basic-info">
+                <div class="asset-title">
+                    <h3>Thông tin cơ bản</h3>
+                </div>
+                <div class="asset-details-grid">
+                    <div class="asset-detail-item">
+                        <div class="detail-label">Mã tài sản:</div>
+                        <div class="detail-value">{{ asset.ma_tai_san }}</div>
+                    </div>
+                    <div class="asset-detail-item">
+                        <div class="detail-label">Tên tài sản:</div>
+                        <div class="detail-value">{{ asset.ten_tai_san }}</div>
+                    </div>
+                    <div class="asset-detail-item">
+                        <div class="detail-label">Số seri:</div>
+                        <div class="detail-value">{{ asset.so_seri or 'Chưa có' }}</div>
+                    </div>
+                    <div class="asset-detail-item">
+                        <div class="detail-label">Mã QR:</div>
+                        <div class="detail-value">{{ asset.ma_qr or 'Chưa có' }}</div>
+                    </div>
+                    
+                    {% if asset.chitietphieunhap and asset.chitietphieunhap.nhomtaisan and asset.chitietphieunhap.nhomtaisan.loaitaisan %}
+                    <div class="asset-detail-item">
+                        <div class="detail-label">Loại tài sản:</div>
+                        <div class="detail-value">{{ asset.chitietphieunhap.nhomtaisan.loaitaisan.ten_loai_ts }}</div>
+                    </div>
+                    <div class="asset-detail-item">
+                        <div class="detail-label">Nhóm tài sản:</div>
+                        <div class="detail-value">{{ asset.chitietphieunhap.nhomtaisan.ten_nhom_ts }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Phần hiển thị tình trạng trong phần thông tin cơ bản -->
+<div class="asset-detail-item">
+    <div class="detail-label">Tình trạng:</div>
+    <div class="detail-value">
+        <span class="product-status 
+            {% if asset.tinh_trang_sp == 'Mới' %}status-new{% endif %}
+            {% if asset.tinh_trang_sp == 'Đang hoạt động' %}status-using{% endif %}
+            {% if asset.tinh_trang_sp == 'Cần kiểm tra' %}status-check{% endif %}
+            {% if asset.tinh_trang_sp == 'Hư hỏng' %}status-damaged{% endif %}
+        ">
+            {% if asset.tinh_trang_sp == 'Mới' %}
+                <i class="fas fa-tag"></i>
+            {% elif asset.tinh_trang_sp == 'Đang hoạt động' %}
+                <i class="fas fa-check-circle"></i>
+            {% elif asset.tinh_trang_sp == 'Cần kiểm tra' %}
+                <i class="fas fa-exclamation-circle"></i>
+            {% elif asset.tinh_trang_sp == 'Hư hỏng' %}
+                <i class="fas fa-times-circle"></i>
+            {% endif %}
+            {{ asset.tinh_trang_sp }}
+        </span>
+    </div>
+</div>
+                    {% if asset.ngay_su_dung_fmt %}
+                    <div class="asset-detail-item">
+                        <div class="detail-label">Ngày bắt đầu sử dụng:</div>
+                        <div class="detail-value">{{ asset.ngay_su_dung_fmt }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="asset-detail-item grid-full">
+                        <div class="detail-label">Tên Phòng:</div>
+                        <div class="detail-value">{% if asset.phong and asset.phong.ten_phong %}
+                            {{ asset.phong.ten_phong }}
+                        {% else %}
+                            Chưa bàn giao
+                        {% endif %}</div>
+                    </div>
+                    {% if asset.han_bh_fmt %}
+                    <div class="asset-detail-item">
+                        <div class="detail-label">Hạn bảo hành:</div>
+                        <div class="detail-value">
+                            {{ asset.han_bh_fmt }}
+                            {% if asset.con_bao_hanh %}
+                            <span class="spec-status status-good">Còn BH</span>
+                            {% else %}
+                            <span class="spec-status status-damaged">Hết BH</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if asset.ghi_chu %}
+                    <div class="asset-detail-item grid-full">
+                        <div class="detail-label">Ghi chú:</div>
+                        <div class="detail-value">{{ asset.ghi_chu }}</div>
+                    </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+            
+            <div class="asset-actions">
+                <button class="action-btn btn-primary">
+                    <i class="fas fa-edit"></i> Sửa thông tin
+                </button>
+                <button class="action-btn btn-secondary">
+                    <i class="fas fa-history"></i> Lịch sử
+                </button>
+                <button class="action-btn btn-qrcode">
+                    <i class="fas fa-qrcode"></i> Mã QR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div class="product-header">
+            <div class="product-info">
+                <div class="product-title">Thông số kỹ thuật</div>
+            </div>
+            <button class="expand-btn" onclick="toggleProduct(this)">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="product-details expanded">
+            <div class="spec-tabs">
+                <div class="spec-search-container">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="spec-search-input" placeholder="Tìm kiếm thông số...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div id="search-results-count" class="search-results-count"></div>
+                </div>
+                <div class="spec-tab-buttons">
+                    <button id="tab-specific" class="spec-tab-btn {% if active_tab == 'specific' %}active{% endif %}" onclick="switchTab('specific')">
+                        Thông số riêng
+                    </button>
+                    <button id="tab-group" class="spec-tab-btn {% if active_tab == 'group' %}active{% endif %}" onclick="switchTab('group')">
+                        Thông số chung
+                    </button>
+                </div>
+                <!-- Tab thông số riêng với thiết kế dạng bảng -->
+<div id="specific-content" class="spec-tab-content {% if active_tab == 'specific' %}active{% endif %}">
+    <div class="details-content">
+        <div class="spec-search-container">
+            <div class="search-input-wrapper">
+                <input type="text" id="spec-search-input" placeholder="Tìm kiếm thông số...">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+            <div id="search-results-count" class="search-results-count"></div>
+        </div>
+        
+        {% if specific_specs|length > 0 %}
+        <div class="specs-table-container">
+            <table class="specs-table">
+                <thead>
+                    <tr>
+                        <th class="column-name">Tên thông số</th>
+                        <th class="column-value">Giá trị sử dụng</th>
+                        <th class="column-status">Tình trạng</th>
+                        <th class="column-updated">Cập nhật</th>
+                        <th class="column-actions">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for spec in specific_specs %}
+                    <tr class="spec-row" data-spec-id="{{ spec.ma_thong_so_ts }}">
+                        <td class="spec-name" title="{{ spec.thongso.chi_tiet_thong_so }}">
+                            {{ spec.thongso.ten_thong_so }}
+                        </td>
+                        <td class="spec-value">
+                            <span id="value-{{ spec.ma_thong_so_ts }}" class="spec-value-text">
+                                {% if 'giá' in spec.thongso.ten_thong_so|lower or 'tiền' in spec.thongso.ten_thong_so|lower or 'chi phí' in spec.thongso.ten_thong_so|lower or 'phí' in spec.thongso.ten_thong_so|lower or 'ngân sách' in spec.thongso.ten_thong_so|lower or 'đồng' in spec.thongso.ten_thong_so|lower %}
+                                    {{ spec.gia_tri_fmt }}
+                                {% else %}
+                                    {{ spec.gia_tri }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td class="spec-status-cell">
+                            <span class="spec-status 
+                                {% if spec.tinh_trang == 'Tốt' %}status-good{% endif %}
+                                {% if spec.tinh_trang == 'Cần kiểm tra' %}status-check{% endif %}
+                                {% if spec.tinh_trang == 'Hư hỏng' %}status-damaged{% endif %}">
+                                <i class="fas fa-{% if spec.tinh_trang == 'Tốt' %}check-circle{% elif spec.tinh_trang == 'Cần kiểm tra' %}exclamation-circle{% elif spec.tinh_trang == 'Hư hỏng' %}times-circle{% endif %}"></i>
+                                {{ spec.tinh_trang }}
+                            </span>
+                        </td>
+                        <td class="spec-updated-cell">
+                            {% if spec.ngay_cap_nhat_fmt %}
+                            <span class="spec-updated">
+                                <i class="fas fa-clock"></i> {{ spec.ngay_cap_nhat_fmt }}
+                            </span>
+                            {% else %}
+                            <span class="spec-updated">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="spec-actions">
+                            <button class="edit-btn" onclick="toggleEdit('{{ spec.ma_thong_so_ts }}')">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="edit-row" id="edit-row-{{ spec.ma_thong_so_ts }}" style="display: none;">
+                        <td colspan="5">
+                            <div class="edit-form" id="edit-{{ spec.ma_thong_so_ts }}" data-spec-name="{{ spec.thongso.ten_thong_so }}">
+                                <div class="edit-form-inline">
+                                    <div class="edit-form-group">
+                                        <label>Giá trị:</label>
+                                        <input type="text" class="edit-input" value="{{ spec.gia_tri }}" oninput="handleEditInput(this, '{{ spec.thongso.ten_thong_so }}')">
+                                    </div>
+                                    <div class="edit-form-group">
+                                        <label>Tình trạng:</label>
+                                        <select class="edit-select">
+                                            <option {% if spec.tinh_trang == 'Tốt' %}selected{% endif %}>Tốt</option>
+                                            <option {% if spec.tinh_trang == 'Cần kiểm tra' %}selected{% endif %}>Cần kiểm tra</option>
+                                            <option {% if spec.tinh_trang == 'Trầy xước nhẹ' %}selected{% endif %}>Trầy xước nhẹ</option>
+                                            <option {% if spec.tinh_trang == 'Hư hỏng' %}selected{% endif %}>Hư hỏng</option>
+                                        </select>
+                                    </div>
+                                    <div class="edit-actions">
+                                        <button class="save-btn" onclick="saveSpecEdit('{{ spec.ma_thong_so_ts }}')"><i class="fas fa-check"></i></button>
+                                        <button class="cancel-btn" onclick="cancelEdit('{{ spec.ma_thong_so_ts }}')"><i class="fas fa-times"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-spec">
+            <div class="empty-spec-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <p>Chưa có thông số riêng nào được thiết lập cho tài sản này.</p>
+            <button class="action-btn btn-primary" onclick="showAddSpecForm()">
+                <i class="fas fa-plus"></i> Thêm thông số
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    {% if specific_specs|length > 0 %}
+    <div class="product-actions">
+        <button class="action-btn btn-primary" onclick="showAddSpecForm()">
+            <i class="fas fa-plus"></i> Thêm thông số
+        </button>
+    </div>
+    {% endif %}
+</div>
+                
+                <!-- Cập nhật tab thông số chung -->
+                <div id="group-content" class="spec-tab-content {% if active_tab == 'group' %}active{% endif %}">
+                    <div class="details-content">
+                        {% if group_specs|length > 0 %}
+                        <div class="specs-grid">
+                            {% for spec in group_specs %}
+                            <div class="spec-card group-spec">
+                                <div class="spec-card-header">
+                                    <div class="spec-name" title="{{ spec.chi_tiet_thong_so }}">
+                                        {{ spec.ten_thong_so }}
+                                    </div>
+                                    <div class="spec-actions">
+                                        <button class="action-btn btn-sm" onclick="addSpecFromGroup('{{ asset.ma_tai_san }}', '{{ spec.ma_thong_so }}', '{{ spec.ten_thong_so }}')">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="spec-card-body group-spec-details">
+                                    {% if spec.so_luong %}
+                                    <div class="group-spec-item">
+                                        <i class="fas fa-cubes"></i> <span>Số lượng: {{ spec.so_luong }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if spec.bao_hanh %}
+                                    <div class="group-spec-item">
+                                        <i class="fas fa-shield-alt"></i> <span>Bảo hành: {{ spec.bao_hanh }} tháng</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if spec.chi_tiet_thong_so %}
+                                    <div class="group-spec-item description">
+                                        <i class="fas fa-info-circle"></i> <span>{{ spec.chi_tiet_thong_so }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-spec">
+                            <div class="empty-spec-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <p>Không có thông số chung nào được thiết lập cho nhóm tài sản này.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form thêm thông số mới -->
+<div id="add-spec-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Thêm thông số mới</h3>
+            <span class="close" onclick="hideAddSpecForm()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="add-spec-form">
+                <div class="form-group">
+                    <label for="spec-name">Tên thông số:</label>
+                    <select id="spec-name" required>
+                        {% for spec in group_specs %}
+                        <option value="{{ spec.ma_thong_so }}">{{ spec.ten_thong_so }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="spec-value">Giá trị:</label>
+                    <input type="text" id="spec-value" required oninput="handleValueInput(this)">
+                    <small id="value-format-hint" style="display: none; color: var(--primary-color);">
+                        Khi nhập giá tiền, chỉ nhập số - sẽ tự động định dạng
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="spec-status">Tình trạng:</label>
+                    <select id="spec-status" required>
+                        <option>Tốt</option>
+                        <option>Cần kiểm tra</option>
+                        <option>Trầy xước nhẹ</option>
+                        <option>Hư hỏng</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideAddSpecForm()">Hủy</button>
+                    <button type="button" class="btn-primary" onclick="addNewSpec('{{ asset.ma_tai_san }}')">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Thêm Modal chỉnh sửa thông tin tài sản -->
+<div id="edit-asset-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Chỉnh sửa thông tin tài sản</h3>
+            <span class="close" onclick="hideEditAssetForm()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="edit-asset-form">
+                <input type="hidden" id="asset-id">
+                
+                <div class="form-group">
+                    <label for="asset-status">Tình trạng:</label>
+                    <select id="asset-status" class="form-control" required>
+                        <option value="Mới">Mới</option>
+                        <option value="Đang hoạt động">Đang hoạt động</option>
+                        <option value="Cần kiểm tra">Cần kiểm tra</option>
+                        <option value="Hư hỏng">Hư hỏng</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="asset-seri">Số seri:</label>
+                    <input type="text" id="asset-seri" class="form-control">
+                    <small id="seri-error" class="error-message" style="color: #dc3545; display: none;">Số seri đã tồn tại trong hệ thống</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="asset-date">Ngày bắt đầu sử dụng:</label>
+                    <input type="date" id="asset-date" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="asset-warranty">Hạn bảo hành:</label>
+                    <input type="date" id="asset-warranty" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="asset-note">Ghi chú:</label>
+                    <textarea id="asset-note" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideEditAssetForm()">Hủy</button>
+                    <button type="button" class="btn-primary" id="save-asset-btn">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/detail.js') }}"></script>
+<script src="{{ url_for('static', filename='js/edit.js') }}"></script>
+{% endblock %}

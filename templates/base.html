@@ -27,8 +27,8 @@
                 <!-- Nav header sẽ được thêm vào bằng JavaScript -->
                 <ul>
                     <li class="{% if request.path == '/' %}active{% endif %}"><a href="{{ url_for('asset_routes.index') }}"><i class="fas fa-home"></i> Trang chủ</a></li>
-                    <!-- <li class="{% if request.path == '/scan' %}active{% endif %}"><a href="{{ url_for('asset_routes.scan_qr') }}"><i class="fas fa-qrcode"></i> Quét QR</a></li> -->
-                    <li class="{% if request.path == '/scan' %}active{% endif %}"><a href="https://qrcodescan.in/"><i class="fas fa-qrcode"></i> Quét QR</a></li>
+                    <li class="{% if request.path == '/scan' %}active{% endif %}"><a href="{{ url_for('asset_routes.scan_qr') }}"><i class="fas fa-qrcode"></i> Quét QR</a></li>
+                    <!-- <li class="{% if request.path == '/scan' %}active{% endif %}"><a href="https://qrcodescan.in/"><i class="fas fa-qrcode"></i> Quét QR</a></li> -->
                     <!-- <li><a href="#"><i class="fas fa-plus-circle"></i> Thêm tài sản</a></li>
                     <li><a href="#"><i class="fas fa-chart-bar"></i> Báo cáo</a></li> -->
                     <li><a href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>

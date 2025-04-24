@@ -68,16 +68,4 @@ def create_app(config_class=Config):
 
 if __name__ == '__main__':
     app = create_app()
-
-    # Lấy địa chỉ IP hiện tại
-    hostname = socket.gethostname()
-    local_ip = socket.gethostbyname(hostname)
-
-    # In ra các đường dẫn truy cập
-    print("\nỨng dụng Flask đang chạy tại:")
-    print(f" * http://127.0.0.1:8080 (Localhost)")
-    print(f" * http://{local_ip}:8080 (Nội bộ LAN)")
-    print(" * http://<IP CÔNG CỘNG>:8080 (Từ bên ngoài - nếu port forwarding thành công)")
-
-    # Chạy ứng dụng Flask để có thể truy cập từ LAN & Internet
     app.run(host='0.0.0.0', port=8080, debug=True)

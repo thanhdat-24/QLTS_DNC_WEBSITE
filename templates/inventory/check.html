@@ -252,9 +252,7 @@
         <div class="form-group">
             <label>Chọn đợt kiểm kê:</label>
             <select id="inventoryCheckSelect" class="form-control">
-                {% for check in inventory_checks %}
-                <option value="{{ check.ma_dot_kiem_ke }}">{{ check.ten_dot }}</option>
-                {% endfor %}
+                <option value="">-- Chọn đợt kiểm kê --</option>
             </select>
         </div>
         
@@ -330,7 +328,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Khởi tạo scanner
     initQRScanner();
     
-    // Load danh sách phòng khi trang được load
+    // Load danh sách đợt kiểm kê
+    loadInventoryChecks();
+    // Load danh sách phòng
     loadRooms();
     
     // Load danh sách phòng khi chọn đợt kiểm kê
@@ -346,6 +346,22 @@ document.addEventListener('DOMContentLoaded', function() {
             updateSummary();
         }
     });
+    
+    function loadInventoryChecks() {
+        fetch('/api/inventory/active-checks')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('inventoryCheckSelect');
+                select.innerHTML = '<option value="">-- Chọn đợt kiểm kê --</option>';
+                data.forEach(check => {
+                    select.innerHTML += `<option value="${check.ma_dot_kiem_ke}">${check.ten_dot}</option>`;
+                });
+            })
+            .catch(error => {
+                console.error('Lỗi khi tải danh sách đợt kiểm kê:', error);
+                notifySystem.error('Lỗi', 'Không thể tải danh sách đợt kiểm kê');
+            });
+    }
     
     function loadRooms() {
         console.log('Loading rooms...');
@@ -513,13 +529,17 @@ function initQRScanner() {
 }
 
 function handleQRCode(qrData) {
-    console.log("Xử lý QR data:", qrData); // Log để debug
-
     const currentInventoryCheck = document.getElementById('inventoryCheckSelect').value;
     const currentRoom = document.getElementById('roomSelect').value;
 
-    if (!currentInventoryCheck || !currentRoom) {
-        notifySystem.warning('Cảnh báo', 'Vui lòng chọn đợt kiểm kê và phòng trước khi quét');
+    // Kiểm tra đã chọn đợt kiểm kê và phòng chưa
+    if (!currentInventoryCheck || currentInventoryCheck === '') {
+        notifySystem.warning('Cảnh báo', 'Vui lòng chọn đợt kiểm kê trước khi quét');
+        return;
+    }
+
+    if (!currentRoom || currentRoom === '') {
+        notifySystem.warning('Cảnh báo', 'Vui lòng chọn phòng trước khi quét');
         return;
     }
 
@@ -528,19 +548,16 @@ function handleQRCode(qrData) {
         let assetId, seri;
         
         if (qrData.startsWith('http')) {
-            // Nếu là URL
             const url = new URL(qrData);
             const params = new URLSearchParams(url.search);
             assetId = params.get('id');
             seri = params.get('seri');
         } else {
-            // Nếu là dữ liệu trực tiếp
             try {
                 const data = JSON.parse(qrData);
                 assetId = data.id;
                 seri = data.seri;
             } catch {
-                // Nếu không phải JSON, thử tách chuỗi
                 const parts = qrData.split('&');
                 parts.forEach(part => {
                     const [key, value] = part.split('=');
@@ -555,7 +572,7 @@ function handleQRCode(qrData) {
             return;
         }
 
-        // Gửi dữ liệu lên server
+        // Gửi request kiểm kê
         fetch('/api/inventory/scan', {
             method: 'POST',
             headers: {
@@ -583,7 +600,6 @@ function handleQRCode(qrData) {
             console.error('Lỗi khi gửi dữ liệu:', error);
             notifySystem.error('Lỗi', 'Không thể xử lý mã QR');
         });
-
     } catch (error) {
         console.error('Lỗi khi xử lý QR:', error);
         notifySystem.error('Lỗi', 'Mã QR không hợp lệ');
@@ -597,7 +613,7 @@ function addInventoryResult(data) {
         <td>${data.ma_tai_san}</td>
         <td>${data.ten_tai_san}</td>
         <td>${data.ten_nhom_ts}</td>
-        <td>${formatDateTime(data.thoi_gian_kiem)}</td>
+        <td>${data.thoi_gian_kiem}</td>
         <td>
             <span class="status-badge ${data.trang_thai.toLowerCase()}">
                 ${data.trang_thai}

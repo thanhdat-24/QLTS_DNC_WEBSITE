@@ -341,40 +341,47 @@ class AssetService:
 
     def process_inventory_scan(self, inventory_check_id, asset_id, room_id):
         """Xử lý quét QR code trong quá trình kiểm kê"""
-        # Lấy thông tin tài sản
-        asset = self.get_asset_detail(asset_id)
-        if not asset:
-            raise Exception('Không tìm thấy tài sản')
-        
-        # Kiểm tra xem tài sản đã được kiểm kê trong đợt này chưa
-        existing = self.supabase.client.table('kiemketaisan') \
-            .select('*') \
-            .eq('ma_dot_kiem_ke', inventory_check_id) \
-            .eq('ma_tai_san', asset_id) \
-            .execute()
-        
-        if existing.data:
-            raise Exception('Tài sản này đã được kiểm kê trong đợt hiện tại')
-        
-        # Thêm bản ghi kiểm kê
-        inventory_data = {
-            'ma_dot_kiem_ke': inventory_check_id,
-            'ma_tai_san': asset_id,
-            'ma_phong': room_id,
-            'tinh_trang': asset['tinh_trang_sp'],
-            'thoi_gian_kiem': datetime.now().isoformat()
-        }
-        
-        self.supabase.client.table('kiemketaisan').insert(inventory_data).execute()
-        
-        # Trả về thông tin để hiển thị
-        return {
-            'ma_tai_san': asset_id,
-            'ten_tai_san': asset['chitietphieunhap']['ten_tai_san'],
-            'ten_nhom_ts': asset['chitietphieunhap']['nhomtaisan']['ten_nhom_ts'],
-            'thoi_gian_kiem': inventory_data['thoi_gian_kiem'],
-            'trang_thai': 'Thành công'
-        }
+        try:
+            # Lấy thông tin tài sản
+            asset = self.get_asset_detail(asset_id)
+            if not asset:
+                raise Exception('Không tìm thấy tài sản')
+            
+            # Kiểm tra xem tài sản đã được kiểm kê trong đợt này chưa
+            existing = self.supabase.client.table('kiemketaisan') \
+                .select('*') \
+                .eq('ma_dot_kiem_ke', inventory_check_id) \
+                .eq('ma_tai_san', asset_id) \
+                .execute()
+            
+            if existing.data:
+                raise Exception('Tài sản này đã được kiểm kê trong đợt hiện tại')
+            
+            # Thêm bản ghi kiểm kê
+            inventory_data = {
+                'ma_dot_kiem_ke': inventory_check_id,
+                'ma_tai_san': asset_id,
+                'ma_phong': room_id,
+                'tinh_trang': asset.get('tinh_trang_sp', 'Chưa xác định'),
+                'thoi_gian_kiem': datetime.now().isoformat()
+            }
+            
+            result = self.supabase.client.table('kiemketaisan').insert(inventory_data).execute()
+            
+            if not result.data:
+                raise Exception('Không thể lưu kết quả kiểm kê')
+            
+            # Trả về thông tin để hiển thị
+            return {
+                'ma_tai_san': asset_id,
+                'ten_tai_san': asset.get('chitietphieunhap', {}).get('ten_tai_san', 'Không xác định'),
+                'ten_nhom_ts': asset.get('chitietphieunhap', {}).get('nhomtaisan', {}).get('ten_nhom_ts', 'Không xác định'),
+                'thoi_gian_kiem': inventory_data['thoi_gian_kiem'],
+                'trang_thai': 'Thành công'
+            }
+        except Exception as e:
+            print(f"Error in process_inventory_scan: {str(e)}")
+            raise e
 
     def _update_group_inventory_count(self, inventory_check_id, group_id, room_id):
         """Cập nhật số lượng kiểm kê cho nhóm tài sản"""

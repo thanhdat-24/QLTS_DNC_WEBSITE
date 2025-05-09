@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Kiểm kê phòng {{ inventory.room.ten_phong }} - Hệ Thống Quản Lý Tài Sản{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inventory-header {
+        background-color: white;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 20px;
+    }
+    
+    .room-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .room-details h2 {
+        font-size: 24px;
+        margin-bottom: 5px;
+        color: var(--primary-color);
+    }
+    
+    .room-location {
+        color: var(--gray-dark);
+        font-size: 14px;
+    }
+    
+    .inventory-stats {
+        display: flex;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .stat-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        flex: 1;
+    }
+    
+    .stat-card h3 {
+        font-size: 24px;
+        margin-bottom: 5px;
+        color: var(--primary-color);
+    }
+    
+    .stat-card p {
+        color: var(--gray-dark);
+        margin: 0;
+    }
+    
+    .group-list {
+        margin-top: 20px;
+    }
+    
+    .group-card {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .group-header {
+        padding: 15px 20px;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .group-name {
+        font-size: 18px;
+        font-weight: 500;
+    }
+    
+    .group-count {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+    
+    .group-content {
+        padding: 20px;
+    }
+    
+    .asset-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .asset-table th,
+    .asset-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--gray-light);
+    }
+    
+    .asset-table th {
+        font-weight: 500;
+        color: var(--gray-dark);
+        background-color: #f8f9fa;
+    }
+    
+    .asset-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-new { background-color: #e3f2fd; color: #1976d2; }
+    .status-using { background-color: #e8f5e9; color: #2e7d32; }
+    .status-check { background-color: #fff3e0; color: #f57c00; }
+    .status-damaged { background-color: #ffebee; color: #c62828; }
+    
+    .capacity-info {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .capacity-text {
+        color: var(--gray-dark);
+        font-size: 14px;
+    }
+    
+    .capacity-warning {
+        color: var(--warning-color);
+    }
+    
+    .capacity-exceeded {
+        color: var(--danger-color);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn-export {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-export:hover {
+        background-color: #43a047;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="inventory-header">
+        <div class="room-info">
+            <div class="room-details">
+                <h2>{{ inventory.room.ten_phong }}</h2>
+                <div class="room-location">
+                    <i class="fas fa-building"></i> {{ inventory.room.toa_nha }} - 
+                    <i class="fas fa-layer-group"></i> {{ inventory.room.tang }}
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-export" onclick="exportInventory()">
+                    <i class="fas fa-file-export"></i> Xuất báo cáo
+                </button>
+            </div>
+        </div>
+        
+        <div class="inventory-stats">
+            <div class="stat-card">
+                <h3>{{ inventory.total_assets }}</h3>
+                <p>Tổng số tài sản</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ inventory.groups|length }}</h3>
+                <p>Số nhóm tài sản</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ inventory.room.suc_chua or 'Không giới hạn' }}</h3>
+                <p>Sức chứa phòng</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="group-list">
+        {% for group_name, group in inventory.groups.items() %}
+        <div class="group-card">
+            <div class="group-header">
+                <div class="group-name">{{ group_name }}</div>
+                <div class="group-count">{{ group.count }} tài sản</div>
+            </div>
+            <div class="group-content">
+                <table class="asset-table">
+                    <thead>
+                        <tr>
+                            <th>Tên tài sản</th>
+                            <th>Số seri</th>
+                            <th>Tình trạng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in group.assets %}
+                        <tr>
+                            <td>{{ asset.ten_tai_san }}</td>
+                            <td>{{ asset.so_seri or 'Chưa có' }}</td>
+                            <td>
+                                <span class="asset-status 
+                                    {% if asset.tinh_trang == 'Mới' %}status-new
+                                    {% elif asset.tinh_trang == 'Đang hoạt động' %}status-using
+                                    {% elif asset.tinh_trang == 'Cần kiểm tra' %}status-check
+                                    {% elif asset.tinh_trang == 'Hư hỏng' %}status-damaged{% endif %}">
+                                    {{ asset.tinh_trang }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ asset.ma_tai_san|asset_url }}" class="action-btn btn-primary">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                {% if group.capacity is not none %}
+                <div class="capacity-info">
+                    <div class="capacity-text">
+                        Sức chứa tối đa: {{ group.capacity }} tài sản
+                    </div>
+                    <div class="capacity-text {% if group.count > group.capacity %}capacity-exceeded
+                        {% elif group.count >= group.capacity * 0.8 %}capacity-warning{% endif %}">
+                        Đã sử dụng: {{ group.count }}/{{ group.capacity }}
+                        {% if group.count > group.capacity %}
+                            (Vượt quá {{ group.count - group.capacity }} tài sản)
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function exportInventory() {
+        // TODO: Implement export functionality
+        alert('Chức năng xuất báo cáo đang được phát triển');
+    }
+</script>
+{% endblock %} 

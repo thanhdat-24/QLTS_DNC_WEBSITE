@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+
+{% block title %}Kiểm kê tài sản - Đợt {{ inventory.ten_dot }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scan.css') }}">
+<style>
+    .inventory-info {
+        background-color: white;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 20px;
+    }
+    
+    .inventory-title {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+    }
+    
+    .inventory-details {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .inventory-detail {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .detail-label {
+        color: var(--gray-dark);
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .detail-value {
+        font-weight: 500;
+    }
+    
+    .scan-result {
+        background-color: white;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        margin-top: 20px;
+        display: none;
+    }
+    
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .result-title {
+        font-size: 18px;
+        font-weight: 500;
+    }
+    
+    .result-form {
+        margin-top: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--gray-light);
+        border-radius: var(--border-radius);
+        font-size: 14px;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+    
+    .btn-submit {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-submit:hover {
+        background-color: var(--primary-dark);
+    }
+    
+    .btn-submit:disabled {
+        background-color: var(--gray);
+        cursor: not-allowed;
+    }
+    
+    .inventory-progress {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .progress-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+    
+    .progress-stats {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-item {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+    
+    .stat-label {
+        color: var(--gray-dark);
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="page-title">
+            <h2><i class="fas fa-clipboard-check"></i> Kiểm kê tài sản</h2>
+            <p>Quét mã QR để kiểm kê tài sản</p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="inventory-info">
+        <div class="inventory-title">{{ inventory.ten_dot }}</div>
+        <div class="inventory-details">
+            <div class="inventory-detail">
+                <div class="detail-label">Thời gian</div>
+                <div class="detail-value">
+                    {{ inventory.ngay_bat_dau|format_date }} - 
+                    {{ inventory.ngay_ket_thuc|format_date }}
+                </div>
+            </div>
+            <div class="inventory-detail">
+                <div class="detail-label">Người phụ trách</div>
+                <div class="detail-value">{{ inventory.nhanvien.ten_nv }}</div>
+            </div>
+            <div class="inventory-detail">
+                <div class="detail-label">Ghi chú</div>
+                <div class="detail-value">{{ inventory.ghi_chu or 'Không có' }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="scan-content-wrapper">
+        <div class="instructions">
+            <i class="fas fa-info-circle"></i> 
+            <span>Hướng camera vào mã QR của tài sản để kiểm kê.</span>
+        </div>
+        
+        <div id="error-container" style="display: none;" class="error-message">
+            <p id="error-text">Đã xảy ra lỗi khi kết nối với camera.</p>
+            <p class="browser-info" id="browser-info"></p>
+        </div>
+        
+        <div class="scanner-container">
+            <video id="qr-video" playsinline autoplay muted></video>
+            <div class="scanner-overlay">
+                <div class="scanner-frame">
+                    <div class="scanner-corner"></div>
+                    <div class="scanner-corner"></div>
+                    <div class="scanner-corner"></div>
+                    <div class="scanner-corner"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="camera-status" id="cameraStatus">
+            Đang khởi tạo camera...
+        </div>
+        
+        <div class="scanner-controls">
+            <button class="btn-switch-camera" id="switchCamera">
+                <i class="fas fa-sync-alt"></i> Đổi camera
+            </button>
+            <button class="btn-switch-camera" id="toggleFlash" style="display:none;">
+                <i class="fas fa-bolt"></i> Đèn flash
+            </button>
+            <button class="btn-switch-camera" id="retryCamera">
+                <i class="fas fa-redo"></i> Thử lại
+            </button>
+        </div>
+    </div>
+    
+    <div id="scanResult" class="scan-result">
+        <div class="result-header">
+            <div class="result-title">Thông tin tài sản</div>
+            <button class="btn-close" onclick="closeScanResult()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div id="assetInfo"></div>
+        
+        <form id="inventoryForm" class="result-form">
+            <input type="hidden" id="assetId">
+            <input type="hidden" id="roomId">
+            
+            <div class="form-group">
+                <label for="status">Tình trạng:</label>
+                <select id="status" class="form-control" required>
+                    <option value="Tốt">Tốt</option>
+                    <option value="Cần kiểm tra">Cần kiểm tra</option>
+                    <option value="Hư hỏng">Hư hỏng</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Vị trí thực tế:</label>
+                <input type="text" id="location" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="note">Ghi chú:</label>
+                <textarea id="note" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <i class="fas fa-save"></i> Lưu kiểm kê
+            </button>
+        </form>
+    </div>
+    
+    <div class="inventory-progress">
+        <div class="progress-title">Tiến độ kiểm kê</div>
+        <div class="progress-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalAssets">0</div>
+                <div class="stat-label">Tổng số tài sản</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="checkedAssets">0</div>
+                <div class="stat-label">Đã kiểm kê</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="remainingAssets">0</div>
+                <div class="stat-label">Còn lại</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+<script>
+    let lastScannedCode = null;
+    let scanTimeout = null;
+    
+    // Xử lý kết quả quét QR
+    function handleQRResult(result) {
+        if (!result) return;
+        
+        const qrData = result.data;
+        
+        // Tránh quét trùng lặp
+        if (lastScannedCode === qrData) return;
+        lastScannedCode = qrData;
+        
+        // Reset timeout
+        if (scanTimeout) clearTimeout(scanTimeout);
+        scanTimeout = setTimeout(() => {
+            lastScannedCode = null;
+        }, 5000);
+        
+        // Xử lý dữ liệu QR
+        const params = new URLSearchParams(qrData);
+        const assetId = params.get('id');
+        const seri = params.get('seri');
+        
+        if (!assetId && !seri) {
+            showError('Mã QR không hợp lệ');
+            return;
+        }
+        
+        // Lấy thông tin tài sản
+        fetch(`/api/assets/${assetId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                showScanResult(data.asset);
+            })
+            .catch(error => {
+                showError('Lỗi khi lấy thông tin tài sản');
+                console.error(error);
+            });
+    }
+    
+    function showScanResult(asset) {
+        const assetInfo = document.getElementById('assetInfo');
+        const scanResult = document.getElementById('scanResult');
+        
+        // Hiển thị thông tin tài sản
+        assetInfo.innerHTML = `
+            <div class="asset-info">
+                <h3>${asset.ten_tai_san}</h3>
+                <p><strong>Số seri:</strong> ${asset.so_seri || 'Chưa có'}</p>
+                <p><strong>Tình trạng hiện tại:</strong> ${asset.tinh_trang_sp}</p>
+                <p><strong>Phòng hiện tại:</strong> ${asset.phong ? asset.phong.ten_phong : 'Chưa có'}</p>
+            </div>
+        `;
+        
+        // Lưu ID tài sản và phòng
+        document.getElementById('assetId').value = asset.ma_tai_san;
+        document.getElementById('roomId').value = asset.ma_phong;
+        
+        // Hiển thị form
+        scanResult.style.display = 'block';
+        
+        // Focus vào trường đầu tiên
+        document.getElementById('status').focus();
+    }
+    
+    function closeScanResult() {
+        document.getElementById('scanResult').style.display = 'none';
+        document.getElementById('inventoryForm').reset();
+    }
+    
+    // Xử lý submit form kiểm kê
+    document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        
+        const data = {
+            asset_id: document.getElementById('assetId').value,
+            room_id: document.getElementById('roomId').value,
+            status: document.getElementById('status').value,
+            location: document.getElementById('location').value,
+            note: document.getElementById('note').value
+        };
+        
+        fetch('/api/inventory/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.error) {
+                showError(result.error);
+                return;
+            }
+            
+            // Hiển thị thông báo thành công
+            notifySystem.success('Thành công', 'Đã ghi nhận kiểm kê tài sản');
+            
+            // Cập nhật tiến độ
+            updateProgress();
+            
+            // Đóng form
+            closeScanResult();
+        })
+        .catch(error => {
+            showError('Lỗi khi lưu kiểm kê');
+            console.error(error);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+        });
+    });
+    
+    function updateProgress() {
+        fetch('/api/inventory/results')
+            .then(response => response.json())
+            .then(data => {
+                const totalAssets = data.assets ? data.assets.length : 0;
+                document.getElementById('totalAssets').textContent = totalAssets;
+                document.getElementById('checkedAssets').textContent = totalAssets;
+                document.getElementById('remainingAssets').textContent = '0';
+            })
+            .catch(error => {
+                console.error('Lỗi khi cập nhật tiến độ:', error);
+            });
+    }
+    
+    // Cập nhật tiến độ ban đầu
+    updateProgress();
+</script>
+<script src="{{ url_for('static', filename='js/qr-scanner.js') }}"></script>
+{% endblock %} 

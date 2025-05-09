@@ -329,3 +329,158 @@ class AssetService:
         if response.data and len(response.data) > 0:
             return response.data[0]
         return None
+
+    def get_active_inventory_checks(self):
+        """Lấy danh sách đợt kiểm kê đang diễn ra"""
+        response = self.supabase.client.table('dotkiemke') \
+            .select('*') \
+            .lte('ngay_bat_dau', datetime.now().date().isoformat()) \
+            .gte('ngay_ket_thuc', datetime.now().date().isoformat()) \
+            .execute()
+        return response.data
+
+    def process_inventory_scan(self, inventory_check_id, qr_code, room_id):
+        """Xử lý quét QR code trong quá trình kiểm kê"""
+        # Lấy thông tin tài sản từ mã QR
+        asset = self.supabase.client.table('taisan') \
+            .select('''
+                *,
+                chitietphieunhap:ma_chi_tiet_pn (
+                    ten_tai_san,
+                    nhomtaisan:ma_nhom_ts (
+                        ten_nhom_ts
+                    )
+                )
+            ''') \
+            .eq('ma_qr', qr_code) \
+            .execute()
+        
+        if not asset.data:
+            raise Exception('Không tìm thấy tài sản với mã QR này')
+        
+        asset = asset.data[0]
+        
+        # Kiểm tra xem tài sản đã được kiểm kê trong đợt này chưa
+        existing = self.supabase.client.table('kiemketaisan') \
+            .select('*') \
+            .eq('ma_dot_kiem_ke', inventory_check_id) \
+            .eq('ma_tai_san', asset['ma_tai_san']) \
+            .execute()
+        
+        if existing.data:
+            raise Exception('Tài sản này đã được kiểm kê trong đợt hiện tại')
+        
+        # Thêm bản ghi kiểm kê
+        inventory_data = {
+            'ma_dot_kiem_ke': inventory_check_id,
+            'ma_tai_san': asset['ma_tai_san'],
+            'ma_phong': room_id,
+            'tinh_trang': asset['tinh_trang_sp'],
+            'thoi_gian_kiem': datetime.now().isoformat()
+        }
+        
+        self.supabase.client.table('kiemketaisan').insert(inventory_data).execute()
+        
+        # Trả về thông tin để hiển thị
+        return {
+            'ma_tai_san': asset['ma_tai_san'],
+            'ten_tai_san': asset['chitietphieunhap']['ten_tai_san'],
+            'ten_nhom_ts': asset['chitietphieunhap']['nhomtaisan']['ten_nhom_ts'],
+            'thoi_gian_kiem': inventory_data['thoi_gian_kiem'],
+            'trang_thai': 'Thành công'
+        }
+
+    def _update_group_inventory_count(self, inventory_check_id, group_id, room_id):
+        """Cập nhật số lượng kiểm kê cho nhóm tài sản"""
+        # Lấy hoặc tạo bản ghi kiểm kê nhóm
+        existing = self.supabase.client.table('kiemke_taisanchung') \
+            .select('*') \
+            .eq('ma_dot_kiem_ke', inventory_check_id) \
+            .eq('ma_nhom_ts', group_id) \
+            .eq('ma_phong', room_id) \
+            .execute()
+        
+        if existing.data:
+            # Cập nhật số lượng
+            record = existing.data[0]
+            self.supabase.client.table('kiemke_taisanchung') \
+                .update({'so_luong_thuc_te': record['so_luong_thuc_te'] + 1}) \
+                .eq('ma_kiem_ke_ts_chung', record['ma_kiem_ke_ts_chung']) \
+                .execute()
+        else:
+            # Tạo bản ghi mới
+            system_count = self._get_system_asset_count(group_id, room_id)
+            self.supabase.client.table('kiemke_taisanchung').insert({
+                'ma_dot_kiem_ke': inventory_check_id,
+                'ma_nhom_ts': group_id,
+                'ma_phong': room_id,
+                'so_luong_he_thong': system_count,
+                'so_luong_thuc_te': 1
+            }).execute()
+
+    def _get_system_asset_count(self, group_id, room_id):
+        """Lấy số lượng tài sản theo nhóm trong hệ thống"""
+        response = self.supabase.client.table('taisan') \
+            .select('ma_tai_san', count='exact') \
+            .eq('ma_phong', room_id) \
+            .eq('chitietphieunhap.ma_nhom_ts', group_id) \
+            .execute()
+        return response.count
+
+    def get_inventory_summary(self, inventory_check_id, room_id=None):
+        """Lấy tổng hợp kết quả kiểm kê"""
+        query = self.supabase.client.table('kiemke_taisanchung') \
+            .select('*, nhomtaisan:ma_nhom_ts(ten_nhom_ts)') \
+            .eq('ma_dot_kiem_ke', inventory_check_id)
+        
+        if room_id:
+            query = query.eq('ma_phong', room_id)
+        
+        response = query.execute()
+        
+        return {
+            'groups': [{
+                'ten_nhom_ts': item['nhomtaisan']['ten_nhom_ts'],
+                'so_luong_he_thong': item['so_luong_he_thong'],
+                'so_luong_thuc_te': item['so_luong_thuc_te']
+            } for item in response.data]
+        }
+
+    def get_rooms(self):
+        """
+        Lấy danh sách tất cả các phòng
+        
+        Returns:
+            Danh sách phòng với thông tin tòa nhà và tầng
+        """
+        response = self.supabase.client.table('phong') \
+            .select('''
+                ma_phong,
+                ten_phong,
+                suc_chua,
+                tang:ma_tang (
+                    ten_tang,
+                    toanha:ma_toa (
+                        ten_toa
+                    )
+                )
+            ''') \
+            .execute()
+        
+        # Xử lý và format dữ liệu trả về
+        rooms = []
+        for room in response.data:
+            # Lấy thông tin tầng và tòa nhà
+            tang_info = room.get('tang', {})
+            toa_info = tang_info.get('toanha', {}) if tang_info else {}
+            
+            # Format tên phòng hiển thị
+            display_name = f"{toa_info.get('ten_toa', '')} - {tang_info.get('ten_tang', '')} - {room.get('ten_phong', '')}"
+            
+            rooms.append({
+                'ma_phong': room.get('ma_phong'),
+                'ten_phong': display_name.strip(' -'),  # Loại bỏ dấu gạch ngang thừa
+                'suc_chua': room.get('suc_chua')
+            })
+        
+        return rooms

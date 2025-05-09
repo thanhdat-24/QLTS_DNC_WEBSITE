@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Thiết lập đợt kiểm kê - Hệ Thống Quản Lý Tài Sản{% endblock %}
+
+{% block extra_css %}
+<style>
+    .setup-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .setup-card {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        padding: 20px;
+    }
+    
+    .setup-title {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--gray-light);
+        border-radius: var(--border-radius);
+        font-size: 14px;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+    
+    .btn-submit {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-submit:hover {
+        background-color: var(--primary-dark);
+    }
+    
+    .btn-submit:disabled {
+        background-color: var(--gray);
+        cursor: not-allowed;
+    }
+    
+    .setup-steps {
+        margin-top: 30px;
+    }
+    
+    .step-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius);
+    }
+    
+    .step-number {
+        width: 24px;
+        height: 24px;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        flex-shrink: 0;
+    }
+    
+    .step-content h4 {
+        margin: 0 0 5px;
+        font-size: 16px;
+        font-weight: 500;
+    }
+    
+    .step-content p {
+        margin: 0;
+        color: var(--gray-dark);
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="page-title">
+            <h2><i class="fas fa-clipboard-list"></i> Thiết lập đợt kiểm kê</h2>
+            <p>Tạo đợt kiểm kê mới và khởi tạo dữ liệu</p>
+        </div>
+    </div>
+</div>
+
+<div class="setup-container">
+    <div class="setup-card">
+        <div class="setup-title">Tạo đợt kiểm kê mới</div>
+        
+        <form id="setupForm">
+            <div class="form-group">
+                <label for="name">Tên đợt kiểm kê:</label>
+                <input type="text" id="name" class="form-control" required 
+                       placeholder="Ví dụ: Kiểm kê Quý 2/2025">
+            </div>
+            
+            <div class="form-group">
+                <label for="startDate">Ngày bắt đầu:</label>
+                <input type="date" id="startDate" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="endDate">Ngày kết thúc:</label>
+                <input type="date" id="endDate" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="employee">Người phụ trách:</label>
+                <select id="employee" class="form-control" required>
+                    <option value="">-- Chọn người phụ trách --</option>
+                    {% for employee in employees %}
+                    <option value="{{ employee.ma_nv }}">{{ employee.ten_nv }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="note">Ghi chú:</label>
+                <textarea id="note" class="form-control" rows="3"
+                          placeholder="Nhập ghi chú nếu có"></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <i class="fas fa-save"></i> Tạo đợt kiểm kê
+            </button>
+        </form>
+    </div>
+    
+    <div class="setup-steps">
+        <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Tạo đợt kiểm kê</h4>
+                <p>Điền đầy đủ thông tin đợt kiểm kê bao gồm tên, thời gian và người phụ trách</p>
+            </div>
+        </div>
+        
+        <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>Khởi tạo dữ liệu</h4>
+                <p>Hệ thống sẽ tự động tạo các bản ghi kiểm kê cho từng phòng và nhóm tài sản</p>
+            </div>
+        </div>
+        
+        <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4>Bắt đầu kiểm kê</h4>
+                <p>Sử dụng chức năng quét QR để tiến hành kiểm kê từng tài sản</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('setupForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    
+    // Tạo đợt kiểm kê
+    const inventoryData = {
+        ten_dot: document.getElementById('name').value,
+        ngay_bat_dau: document.getElementById('startDate').value,
+        ngay_ket_thuc: document.getElementById('endDate').value,
+        ma_nv: document.getElementById('employee').value,
+        ghi_chu: document.getElementById('note').value
+    };
+    
+    // Gọi API tạo đợt kiểm kê
+    fetch('/api/inventory/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(inventoryData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            notifySystem.error('Lỗi', result.error);
+            return;
+        }
+        
+        // Khởi tạo dữ liệu kiểm kê
+        return fetch('/api/inventory/initialize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inventory_id: result.inventory_id
+            })
+        });
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            notifySystem.error('Lỗi', result.error);
+            return;
+        }
+        
+        notifySystem.success('Thành công', 'Đã tạo đợt kiểm kê mới');
+        
+        // Chuyển đến trang kiểm kê
+        setTimeout(() => {
+            window.location.href = '/scan/inventory';
+        }, 1500);
+    })
+    .catch(error => {
+        console.error('Lỗi:', error);
+        notifySystem.error('Lỗi', 'Không thể tạo đợt kiểm kê');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+    });
+});
+</script>
+{% endblock %}

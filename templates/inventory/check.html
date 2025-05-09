@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+
+{% block title %}Kiểm kê tài sản - Hệ Thống Quản Lý Tài Sản{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
+<style>
+    .scanner-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 20px auto;
+        position: relative;
+    }
+    
+    #qr-video {
+        width: 100%;
+        border-radius: 8px;
+    }
+    
+    .scanner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .scanner-frame {
+        width: 200px;
+        height: 200px;
+        border: 2px solid var(--primary-color);
+        border-radius: 8px;
+    }
+
+    .inventory-detail {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .detail-table {
+        overflow-x: auto;
+    }
+
+    .detail-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .detail-table th,
+    .detail-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    .detail-table th {
+        background: #f8f9fa;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+    .status-badge.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .status-badge.warning {
+        background: #fff3e0;
+        color: #ef6c00;
+    }
+
+    .status-badge.error {
+        background: #fbe9e7;
+        color: #c62828;
+    }
+
+    .btn-export {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-export:hover {
+        background: var(--primary-dark);
+    }
+
+    .scanner-section {
+        margin: 20px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .scanner-container {
+        width: 100%;
+        max-width: 500px;
+        position: relative;
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    #qr-video {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .scanner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .scanner-frame {
+        width: 200px;
+        height: 200px;
+        border: 2px solid #fff;
+        border-radius: 10px;
+        position: relative;
+    }
+
+    .scanner-frame::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--primary-color);
+        animation: scan 2s linear infinite;
+    }
+
+    @keyframes scan {
+        0% {
+            top: 0;
+        }
+        50% {
+            top: 100%;
+        }
+        100% {
+            top: 0;
+        }
+    }
+
+    .scanner-buttons {
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        padding: 0 10px;
+    }
+
+    .scanner-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .scanner-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .scanner-status {
+        margin-top: 10px;
+        text-align: center;
+        color: var(--gray-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="page-title">
+            <h2><i class="fas fa-clipboard-check"></i> Kiểm kê tài sản</h2>
+            <p>Quét mã QR để kiểm kê tài sản</p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="inventory-setup">
+        <div class="form-group">
+            <label>Chọn đợt kiểm kê:</label>
+            <select id="inventoryCheckSelect" class="form-control">
+                {% for check in inventory_checks %}
+                <option value="{{ check.ma_dot_kiem_ke }}">{{ check.ten_dot }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Chọn phòng kiểm kê:</label>
+            <select id="roomSelect" class="form-control">
+                <option value="">-- Chọn phòng --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="scanner-section">
+        <div class="scanner-container">
+            <video id="qr-video" playsinline autoplay></video>
+            <div class="scanner-overlay">
+                <div class="scanner-frame"></div>
+            </div>
+            <div class="scanner-buttons">
+                <button id="switchCamera" class="scanner-btn">
+                    <i class="fas fa-sync-alt"></i> Đổi camera
+                </button>
+                <button id="toggleFlash" class="scanner-btn">
+                    <i class="fas fa-bolt"></i> Đèn flash
+                </button>
+            </div>
+        </div>
+        <div class="scanner-status" id="scannerStatus">
+            Đang khởi tạo camera...
+        </div>
+    </div>
+
+    <div class="inventory-summary">
+        <h3>Kết quả kiểm kê</h3>
+        <div class="summary-content">
+            <!-- Kết quả kiểm kê sẽ được hiển thị ở đây -->
+        </div>
+    </div>
+
+    <div class="inventory-detail">
+        <div class="detail-header">
+            <h3>Chi tiết kiểm kê</h3>
+            <button class="btn-export" onclick="exportResults()">
+                <i class="fas fa-file-export"></i> Xuất báo cáo
+            </button>
+        </div>
+        <div class="detail-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã tài sản</th>
+                        <th>Tên tài sản</th>
+                        <th>Nhóm tài sản</th>
+                        <th>Thời gian kiểm</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryDetailList">
+                    <!-- Dữ liệu sẽ được thêm vào đây qua JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentInventoryCheck = null;
+    let currentRoom = null;
+    
+    // Khởi tạo scanner
+    initQRScanner();
+    
+    // Load danh sách phòng khi trang được load
+    loadRooms();
+    
+    // Load danh sách phòng khi chọn đợt kiểm kê
+    document.getElementById('inventoryCheckSelect').addEventListener('change', function() {
+        currentInventoryCheck = this.value;
+        updateSummary();
+    });
+    
+    // Cập nhật phòng hiện tại khi thay đổi
+    document.getElementById('roomSelect').addEventListener('change', function() {
+        currentRoom = this.value;
+        if (currentRoom) {
+            updateSummary();
+        }
+    });
+    
+    function loadRooms() {
+        console.log('Loading rooms...');
+        fetch('/api/rooms')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(rooms => {
+                console.log('Rooms loaded:', rooms);
+                const select = document.getElementById('roomSelect');
+                select.innerHTML = '<option value="">-- Chọn phòng --</option>' +
+                    rooms.map(room => 
+                        `<option value="${room.ma_phong}">${room.ten_phong}</option>`
+                    ).join('');
+            })
+            .catch(error => {
+                console.error('Error loading rooms:', error);
+                const select = document.getElementById('roomSelect');
+                select.innerHTML = '<option value="">Lỗi khi tải danh sách phòng</option>';
+                notifySystem.error('Lỗi', 'Không thể tải danh sách phòng');
+            });
+    }
+    
+    function updateSummary() {
+        if (!currentInventoryCheck || !currentRoom) return;
+        
+        fetch(`/api/inventory/summary/${currentInventoryCheck}?room=${currentRoom}`)
+            .then(response => response.json())
+            .then(summary => {
+                displaySummary(summary);
+            })
+            .catch(error => {
+                console.error('Error updating summary:', error);
+                notifySystem.error('Lỗi', 'Không thể cập nhật thống kê');
+            });
+    }
+    
+    function displaySummary(summary) {
+        const container = document.querySelector('.summary-content');
+        if (summary.groups && summary.groups.length > 0) {
+            container.innerHTML = `
+                <div class="summary-grid">
+                    ${summary.groups.map(group => `
+                        <div class="summary-item">
+                            <h4>${group.ten_nhom_ts}</h4>
+                            <div class="summary-details">
+                                <div>Số lượng hệ thống: ${group.so_luong_he_thong}</div>
+                                <div>Đã kiểm kê: ${group.so_luong_thuc_te}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            container.innerHTML = '<p>Chưa có dữ liệu kiểm kê</p>';
+        }
+    }
+});
+
+function initQRScanner() {
+    const video = document.getElementById('qr-video');
+    const switchButton = document.getElementById('switchCamera');
+    const flashButton = document.getElementById('toggleFlash');
+    const statusElement = document.getElementById('scannerStatus');
+    let currentStream = null;
+    let currentFacingMode = 'environment'; // back camera by default
+
+    // Kiểm tra hỗ trợ camera
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        statusElement.textContent = 'Trình duyệt không hỗ trợ camera';
+        return;
+    }
+
+    // Hàm khởi tạo camera
+    async function startCamera(facingMode = 'environment') {
+        try {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: facingMode
+                }
+            });
+
+            currentStream = stream;
+            video.srcObject = stream;
+            video.play();
+            statusElement.textContent = 'Camera đã sẵn sàng';
+            
+            // Bắt đầu quét QR
+            requestAnimationFrame(scanQRCode);
+        } catch (error) {
+            console.error('Lỗi camera:', error);
+            statusElement.textContent = 'Không thể khởi tạo camera';
+        }
+    }
+
+    // Hàm quét QR code
+    function scanQRCode() {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code) {
+                // Xử lý mã QR tìm thấy
+                handleQRCode(code.data);
+            }
+        }
+        requestAnimationFrame(scanQRCode);
+    }
+
+    // Xử lý nút đổi camera
+    switchButton.addEventListener('click', () => {
+        currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+        startCamera(currentFacingMode);
+    });
+
+    // Xử lý nút bật/tắt đèn flash
+    flashButton.addEventListener('click', async () => {
+        if (!currentStream) return;
+        
+        const track = currentStream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities();
+        
+        if (capabilities.torch) {
+            const torch = !track.getSettings().torch;
+            try {
+                await track.applyConstraints({
+                    advanced: [{ torch }]
+                });
+                flashButton.innerHTML = torch ? 
+                    '<i class="fas fa-bolt"></i> Tắt đèn' : 
+                    '<i class="fas fa-bolt"></i> Bật đèn';
+            } catch (e) {
+                console.error('Không thể điều khiển đèn flash:', e);
+            }
+        } else {
+            flashButton.style.display = 'none';
+        }
+    });
+
+    // Khởi động camera
+    startCamera();
+}
+
+function handleQRCode(qrData) {
+    const currentInventoryCheck = document.getElementById('inventoryCheckSelect').value;
+    const currentRoom = document.getElementById('roomSelect').value;
+
+    if (!currentInventoryCheck || !currentRoom) {
+        notifySystem.warning('Cảnh báo', 'Vui lòng chọn đợt kiểm kê và phòng trước khi quét');
+        return;
+    }
+
+    // Gửi dữ liệu QR đến server
+    fetch('/api/inventory/scan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            inventory_check_id: currentInventoryCheck,
+            qr_code: qrData,
+            room_id: currentRoom
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Thêm kết quả vào bảng
+            addInventoryResult(result.data);
+            // Phát âm thanh thành công
+            playSuccessSound();
+            notifySystem.success('Thành công', 'Đã kiểm kê tài sản');
+        } else {
+            playErrorSound();
+            notifySystem.error('Lỗi', result.error);
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi khi xử lý QR:', error);
+        notifySystem.error('Lỗi', 'Không thể xử lý mã QR');
+    });
+}
+
+function addInventoryResult(data) {
+    const tbody = document.getElementById('inventoryDetailList');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${data.ma_tai_san}</td>
+        <td>${data.ten_tai_san}</td>
+        <td>${data.ten_nhom_ts}</td>
+        <td>${formatDateTime(data.thoi_gian_kiem)}</td>
+        <td>
+            <span class="status-badge ${data.trang_thai.toLowerCase()}">
+                ${data.trang_thai}
+            </span>
+        </td>
+    `;
+    tbody.insertBefore(row, tbody.firstChild);
+}
+
+function formatDateTime(datetime) {
+    const date = new Date(datetime);
+    return date.toLocaleString('vi-VN');
+}
+
+// Thêm âm thanh phản hồi
+function playSuccessSound() {
+    const audio = new Audio('/static/sounds/success.mp3');
+    audio.play();
+}
+
+function playErrorSound() {
+    const audio = new Audio('/static/sounds/error.mp3');
+    audio.play();
+}
+
+function exportResults() {
+    const currentInventoryCheck = document.getElementById('inventoryCheckSelect').value;
+    const currentRoom = document.getElementById('roomSelect').value;
+
+    if (!currentInventoryCheck || !currentRoom) {
+        notifySystem.warning('Cảnh báo', 'Vui lòng chọn đợt kiểm kê và phòng');
+        return;
+    }
+
+    // Tải báo cáo
+    window.location.href = `/api/inventory/export?inventory_check_id=${currentInventoryCheck}&room_id=${currentRoom}`;
+}
+</script>
+{% endblock %}

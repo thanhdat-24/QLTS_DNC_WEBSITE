@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notification-dropdown.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -26,11 +27,22 @@
             <nav class="main-nav">
                 <!-- Nav header sẽ được thêm vào bằng JavaScript -->
                 <ul>
-                    <li class="{% if request.path == '/' %}active{% endif %}"><a href="{{ url_for('asset_routes.index') }}"><i class="fas fa-home"></i> Trang chủ</a></li>
-                    <li class="{% if request.path == '/scan' %}active{% endif %}"><a href="{{ url_for('asset_routes.scan_qr') }}"><i class="fas fa-qrcode"></i> Quét QR</a></li>
-                    <!-- <li class="{% if request.path == '/scan' %}active{% endif %}"><a href="https://qrcodescan.in/"><i class="fas fa-qrcode"></i> Quét QR</a></li> -->
-                    <!-- <li><a href="#"><i class="fas fa-plus-circle"></i> Thêm tài sản</a></li>
-                    <li><a href="#"><i class="fas fa-chart-bar"></i> Báo cáo</a></li> -->
+                    <li class="{% if request.path == '/' %}active{% endif %}">
+                        <a href="{{ url_for('asset_routes.index') }}">
+                            <i class="fas fa-home"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li class="{% if request.path == '/scan' %}active{% endif %}">
+                        <a href="{{ url_for('asset_routes.scan_qr') }}">
+                            <i class="fas fa-qrcode"></i> Quét QR
+                        </a>
+                    </li>
+                    <!-- Thêm mục menu mới cho kiểm kê -->
+                    <li class="{% if request.path == '/inventory-check' %}active{% endif %}">
+                        <a href="{{ url_for('asset_routes.inventory_check') }}">
+                            <i class="fas fa-clipboard-check"></i> Kiểm kê tài sản
+                        </a>
+                    </li>
                     <li><a href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
                 </ul>
             </nav>
@@ -158,6 +170,15 @@
             height: 1px;
             background-color: var(--gray-light);
             margin: 5px 0;
+        }
+
+        .btn-primary.inventory-btn {
+            background-color: #4CAF50;
+            margin-left: 10px;
+        }
+
+        .btn-primary.inventory-btn:hover {
+            background-color: #45a049;
         }
     </style>
 

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, send_file
 from services.asset_service import AssetService
 from services.auth_service import login_required, role_required, AuthService
 from services.url_encryption import URLEncryption
@@ -505,3 +505,85 @@ def api_asset_history(asset_id):
         'asset_name': asset.get('chitietphieunhap', {}).get('ten_tai_san', 'Tài sản'),
         'history': history
     })
+
+@asset_routes.route('/inventory-check')
+@login_required
+def inventory_check():
+    """Trang kiểm kê tài sản"""
+    # Lấy danh sách đợt kiểm kê đang diễn ra
+    active_inventory_checks = asset_service.get_active_inventory_checks()
+    return render_template('inventory/check.html', inventory_checks=active_inventory_checks)
+
+@asset_routes.route('/api/inventory/scan', methods=['POST'])
+@login_required
+def process_inventory_scan():
+    """API xử lý khi quét QR code trong quá trình kiểm kê"""
+    data = request.get_json()
+    inventory_check_id = data.get('inventory_check_id')
+    qr_code = data.get('qr_code')
+    room_id = data.get('room_id')
+    
+    if not all([inventory_check_id, qr_code, room_id]):
+        return jsonify({'error': 'Thiếu thông tin cần thiết'}), 400
+        
+    try:
+        # Xử lý kiểm kê tài sản
+        result = asset_service.process_inventory_scan(
+            inventory_check_id=inventory_check_id,
+            qr_code=qr_code,
+            room_id=room_id
+        )
+        
+        return jsonify({
+            'success': True,
+            'data': result
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@asset_routes.route('/api/inventory/summary/<int:inventory_check_id>')
+@login_required
+def get_inventory_summary(inventory_check_id):
+    """API lấy tổng hợp kết quả kiểm kê"""
+    summary = asset_service.get_inventory_summary(inventory_check_id)
+    return jsonify(summary)
+
+@asset_routes.route('/api/rooms')
+@login_required
+def get_rooms():
+    """API lấy danh sách phòng"""
+    try:
+        print("Getting rooms from database...") # Debug log
+        rooms = asset_service.get_rooms()
+        print(f"Successfully retrieved {len(rooms)} rooms") # Debug log
+        return jsonify(rooms)
+    except Exception as e:
+        print(f"Error getting rooms: {str(e)}") # Debug log
+        return jsonify({'error': str(e)}), 500
+
+@asset_routes.route('/api/inventory/export')
+@login_required
+def export_inventory():
+    """Xuất báo cáo kiểm kê"""
+    inventory_check_id = request.args.get('inventory_check_id')
+    room_id = request.args.get('room_id')
+    
+    if not all([inventory_check_id, room_id]):
+        return jsonify({'error': 'Thiếu thông tin cần thiết'}), 400
+        
+    try:
+        # Gọi service để tạo báo cáo
+        report = asset_service.generate_inventory_report(inventory_check_id, room_id)
+        
+        # Trả về file Excel
+        return send_file(
+            report,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'bao-cao-kiem-ke-{datetime.now().strftime("%Y%m%d")}.xlsx'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

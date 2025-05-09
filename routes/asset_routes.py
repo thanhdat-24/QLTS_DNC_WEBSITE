@@ -520,17 +520,28 @@ def process_inventory_scan():
     """API xử lý khi quét QR code trong quá trình kiểm kê"""
     data = request.get_json()
     inventory_check_id = data.get('inventory_check_id')
-    qr_code = data.get('qr_code')
+    asset_id = data.get('asset_id')
+    seri = data.get('seri')
     room_id = data.get('room_id')
     
-    if not all([inventory_check_id, qr_code, room_id]):
+    if not all([inventory_check_id, room_id]) or (not asset_id and not seri):
         return jsonify({'error': 'Thiếu thông tin cần thiết'}), 400
         
     try:
+        # Tìm tài sản theo ID hoặc số seri
+        asset = None
+        if asset_id:
+            asset = asset_service.get_asset_detail(int(asset_id))
+        elif seri:
+            asset = asset_service.get_asset_by_seri(seri)
+            
+        if not asset:
+            return jsonify({'error': 'Không tìm thấy tài sản'}), 404
+            
         # Xử lý kiểm kê tài sản
         result = asset_service.process_inventory_scan(
             inventory_check_id=inventory_check_id,
-            qr_code=qr_code,
+            asset_id=asset['ma_tai_san'],
             room_id=room_id
         )
         

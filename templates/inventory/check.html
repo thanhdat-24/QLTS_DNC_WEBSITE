@@ -473,43 +473,60 @@ function initQRScanner() {
 }
 
 function handleQRCode(qrData) {
-    const currentInventoryCheck = document.getElementById('inventoryCheckSelect').value;
-    const currentRoom = document.getElementById('roomSelect').value;
+    try {
+        // Parse URL từ mã QR
+        const url = new URL(qrData);
+        const params = new URLSearchParams(url.search);
+        const assetId = params.get('id');
+        const seri = params.get('seri');
 
-    if (!currentInventoryCheck || !currentRoom) {
-        notifySystem.warning('Cảnh báo', 'Vui lòng chọn đợt kiểm kê và phòng trước khi quét');
-        return;
-    }
-
-    // Gửi dữ liệu QR đến server
-    fetch('/api/inventory/scan', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            inventory_check_id: currentInventoryCheck,
-            qr_code: qrData,
-            room_id: currentRoom
-        })
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            // Thêm kết quả vào bảng
-            addInventoryResult(result.data);
-            // Phát âm thanh thành công
-            playSuccessSound();
-            notifySystem.success('Thành công', 'Đã kiểm kê tài sản');
-        } else {
-            playErrorSound();
-            notifySystem.error('Lỗi', result.error);
+        if (!assetId && !seri) {
+            notifySystem.warning('Cảnh báo', 'Mã QR không hợp lệ');
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Lỗi khi xử lý QR:', error);
-        notifySystem.error('Lỗi', 'Không thể xử lý mã QR');
-    });
+
+        const currentInventoryCheck = document.getElementById('inventoryCheckSelect').value;
+        const currentRoom = document.getElementById('roomSelect').value;
+
+        if (!currentInventoryCheck || !currentRoom) {
+            notifySystem.warning('Cảnh báo', 'Vui lòng chọn đợt kiểm kê và phòng trước khi quét');
+            return;
+        }
+
+        // Gửi dữ liệu QR đến server
+        fetch('/api/inventory/scan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inventory_check_id: currentInventoryCheck,
+                asset_id: assetId,
+                seri: seri,
+                room_id: currentRoom
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Thêm kết quả vào bảng
+                addInventoryResult(result.data);
+                // Phát âm thanh thành công
+                playSuccessSound();
+                notifySystem.success('Thành công', 'Đã kiểm kê tài sản');
+            } else {
+                playErrorSound();
+                notifySystem.error('Lỗi', result.error);
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi xử lý QR:', error);
+            notifySystem.error('Lỗi', 'Không thể xử lý mã QR');
+        });
+    } catch (error) {
+        console.error('Lỗi khi parse URL:', error);
+        notifySystem.error('Lỗi', 'Mã QR không hợp lệ');
+    }
 }
 
 function addInventoryResult(data) {

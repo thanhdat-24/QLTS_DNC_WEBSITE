@@ -339,32 +339,18 @@ class AssetService:
             .execute()
         return response.data
 
-    def process_inventory_scan(self, inventory_check_id, qr_code, room_id):
+    def process_inventory_scan(self, inventory_check_id, asset_id, room_id):
         """Xử lý quét QR code trong quá trình kiểm kê"""
-        # Lấy thông tin tài sản từ mã QR
-        asset = self.supabase.client.table('taisan') \
-            .select('''
-                *,
-                chitietphieunhap:ma_chi_tiet_pn (
-                    ten_tai_san,
-                    nhomtaisan:ma_nhom_ts (
-                        ten_nhom_ts
-                    )
-                )
-            ''') \
-            .eq('ma_qr', qr_code) \
-            .execute()
-        
-        if not asset.data:
-            raise Exception('Không tìm thấy tài sản với mã QR này')
-        
-        asset = asset.data[0]
+        # Lấy thông tin tài sản
+        asset = self.get_asset_detail(asset_id)
+        if not asset:
+            raise Exception('Không tìm thấy tài sản')
         
         # Kiểm tra xem tài sản đã được kiểm kê trong đợt này chưa
         existing = self.supabase.client.table('kiemketaisan') \
             .select('*') \
             .eq('ma_dot_kiem_ke', inventory_check_id) \
-            .eq('ma_tai_san', asset['ma_tai_san']) \
+            .eq('ma_tai_san', asset_id) \
             .execute()
         
         if existing.data:
@@ -373,7 +359,7 @@ class AssetService:
         # Thêm bản ghi kiểm kê
         inventory_data = {
             'ma_dot_kiem_ke': inventory_check_id,
-            'ma_tai_san': asset['ma_tai_san'],
+            'ma_tai_san': asset_id,
             'ma_phong': room_id,
             'tinh_trang': asset['tinh_trang_sp'],
             'thoi_gian_kiem': datetime.now().isoformat()
@@ -383,7 +369,7 @@ class AssetService:
         
         # Trả về thông tin để hiển thị
         return {
-            'ma_tai_san': asset['ma_tai_san'],
+            'ma_tai_san': asset_id,
             'ten_tai_san': asset['chitietphieunhap']['ten_tai_san'],
             'ten_nhom_ts': asset['chitietphieunhap']['nhomtaisan']['ten_nhom_ts'],
             'thoi_gian_kiem': inventory_data['thoi_gian_kiem'],

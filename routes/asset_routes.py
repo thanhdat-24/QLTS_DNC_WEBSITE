@@ -4,6 +4,7 @@ from services.auth_service import login_required, role_required, AuthService
 from services.url_encryption import URLEncryption
 from datetime import datetime
 from services.notification_service import NotificationService
+from services.supabase_service import SupabaseService
 
 # Tạo Blueprint cho các route liên quan đến tài sản
 asset_routes = Blueprint('asset_routes', __name__)
@@ -597,4 +598,33 @@ def export_inventory():
             download_name=f'bao-cao-kiem-ke-{datetime.now().strftime("%Y%m%d")}.xlsx'
         )
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@asset_routes.route('/api/inventory/active-checks')
+@login_required
+def get_active_inventory_checks():
+    """API lấy danh sách đợt kiểm kê đang diễn ra"""
+    try:
+        # Lấy tất cả đợt kiểm kê, không chỉ đợt đang diễn ra
+        response = SupabaseService().client.table('dotkiemke') \
+            .select('*') \
+            .order('ngay_bat_dau', desc=True) \
+            .execute()
+            
+        if not response.data:
+            return jsonify([])
+            
+        # Format dữ liệu trả về
+        inventory_checks = []
+        for check in response.data:
+            inventory_checks.append({
+                'ma_dot_kiem_ke': check['ma_dot_kiem_ke'],
+                'ten_dot': check['ten_dot'],
+                'ngay_bat_dau': check['ngay_bat_dau'],
+                'ngay_ket_thuc': check['ngay_ket_thuc']
+            })
+            
+        return jsonify(inventory_checks)
+    except Exception as e:
+        print(f"Error getting inventory checks: {str(e)}")
         return jsonify({'error': str(e)}), 500

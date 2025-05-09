@@ -17,8 +17,8 @@ namespace Project_QLTS_DNC.Helpers
             try
             {
                 // Sử dụng tên miền thay vì IP
-                string baseUrl = "https://thanhdatdnc.id.vn";
-                return $"{baseUrl}/qr?id={qrDTO.MaTaiSan}&seri={qrDTO.SoSeri}";  // Sử dụng HTTPS thay vì HTTP
+                string domain = "thanhdatdnc.id.vn";
+                return $"https://{domain}";  // Sử dụng HTTPS thay vì HTTP
             }
             catch (Exception ex)
             {

@@ -204,6 +204,36 @@
         text-align: center;
         color: var(--gray-dark);
     }
+
+    @media (max-width: 768px) {
+        .scanner-container {
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 4/3;
+        }
+
+        .scanner-frame {
+            width: 70%;
+            height: 70%;
+        }
+
+        .scanner-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .scanner-btn {
+            padding: 12px 20px;
+            font-size: 16px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -291,7 +321,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let currentInventoryCheck = null;
@@ -384,7 +414,7 @@ function initQRScanner() {
     const flashButton = document.getElementById('toggleFlash');
     const statusElement = document.getElementById('scannerStatus');
     let currentStream = null;
-    let currentFacingMode = 'environment'; // back camera by default
+    let currentFacingMode = 'environment'; // Mặc định dùng camera sau
 
     // Kiểm tra hỗ trợ camera
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -399,22 +429,26 @@ function initQRScanner() {
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
-            const stream = await navigator.mediaDevices.getUserMedia({
+            const constraints = {
                 video: {
-                    facingMode: facingMode
+                    facingMode: facingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
                 }
-            });
+            };
 
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
             currentStream = stream;
             video.srcObject = stream;
-            video.play();
+            await video.play();
+            
             statusElement.textContent = 'Camera đã sẵn sàng';
             
             // Bắt đầu quét QR
             requestAnimationFrame(scanQRCode);
         } catch (error) {
             console.error('Lỗi camera:', error);
-            statusElement.textContent = 'Không thể khởi tạo camera';
+            statusElement.textContent = 'Không thể khởi tạo camera: ' + error.message;
         }
     }
 
@@ -428,11 +462,17 @@ function initQRScanner() {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height);
-            
-            if (code) {
-                // Xử lý mã QR tìm thấy
-                handleQRCode(code.data);
+            try {
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+                
+                if (code) {
+                    console.log("Đã tìm thấy QR code:", code.data);
+                    handleQRCode(code.data);
+                }
+            } catch (error) {
+                console.error("Lỗi khi xử lý QR:", error);
             }
         }
         requestAnimationFrame(scanQRCode);
@@ -452,12 +492,12 @@ function initQRScanner() {
         const capabilities = track.getCapabilities();
         
         if (capabilities.torch) {
-            const torch = !track.getSettings().torch;
+            const settings = track.getSettings();
             try {
                 await track.applyConstraints({
-                    advanced: [{ torch }]
+                    advanced: [{ torch: !settings.torch }]
                 });
-                flashButton.innerHTML = torch ? 
+                flashButton.innerHTML = settings.torch ? 
                     '<i class="fas fa-bolt"></i> Tắt đèn' : 
                     '<i class="fas fa-bolt"></i> Bật đèn';
             } catch (e) {
@@ -473,27 +513,49 @@ function initQRScanner() {
 }
 
 function handleQRCode(qrData) {
+    console.log("Xử lý QR data:", qrData); // Log để debug
+
+    const currentInventoryCheck = document.getElementById('inventoryCheckSelect').value;
+    const currentRoom = document.getElementById('roomSelect').value;
+
+    if (!currentInventoryCheck || !currentRoom) {
+        notifySystem.warning('Cảnh báo', 'Vui lòng chọn đợt kiểm kê và phòng trước khi quét');
+        return;
+    }
+
     try {
-        // Parse URL từ mã QR
-        const url = new URL(qrData);
-        const params = new URLSearchParams(url.search);
-        const assetId = params.get('id');
-        const seri = params.get('seri');
+        // Parse URL hoặc xử lý trực tiếp dữ liệu QR
+        let assetId, seri;
+        
+        if (qrData.startsWith('http')) {
+            // Nếu là URL
+            const url = new URL(qrData);
+            const params = new URLSearchParams(url.search);
+            assetId = params.get('id');
+            seri = params.get('seri');
+        } else {
+            // Nếu là dữ liệu trực tiếp
+            try {
+                const data = JSON.parse(qrData);
+                assetId = data.id;
+                seri = data.seri;
+            } catch {
+                // Nếu không phải JSON, thử tách chuỗi
+                const parts = qrData.split('&');
+                parts.forEach(part => {
+                    const [key, value] = part.split('=');
+                    if (key === 'id') assetId = value;
+                    if (key === 'seri') seri = value;
+                });
+            }
+        }
 
         if (!assetId && !seri) {
             notifySystem.warning('Cảnh báo', 'Mã QR không hợp lệ');
             return;
         }
 
-        const currentInventoryCheck = document.getElementById('inventoryCheckSelect').value;
-        const currentRoom = document.getElementById('roomSelect').value;
-
-        if (!currentInventoryCheck || !currentRoom) {
-            notifySystem.warning('Cảnh báo', 'Vui lòng chọn đợt kiểm kê và phòng trước khi quét');
-            return;
-        }
-
-        // Gửi dữ liệu QR đến server
+        // Gửi dữ liệu lên server
         fetch('/api/inventory/scan', {
             method: 'POST',
             headers: {
@@ -509,22 +571,21 @@ function handleQRCode(qrData) {
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                // Thêm kết quả vào bảng
-                addInventoryResult(result.data);
-                // Phát âm thanh thành công
                 playSuccessSound();
                 notifySystem.success('Thành công', 'Đã kiểm kê tài sản');
+                addInventoryResult(result.data);
             } else {
                 playErrorSound();
-                notifySystem.error('Lỗi', result.error);
+                notifySystem.error('Lỗi', result.error || 'Không thể xử lý mã QR');
             }
         })
         .catch(error => {
-            console.error('Lỗi khi xử lý QR:', error);
+            console.error('Lỗi khi gửi dữ liệu:', error);
             notifySystem.error('Lỗi', 'Không thể xử lý mã QR');
         });
+
     } catch (error) {
-        console.error('Lỗi khi parse URL:', error);
+        console.error('Lỗi khi xử lý QR:', error);
         notifySystem.error('Lỗi', 'Mã QR không hợp lệ');
     }
 }

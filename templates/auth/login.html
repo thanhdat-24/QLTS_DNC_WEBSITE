@@ -17,10 +17,10 @@
             --dark-color: #343a40;
             --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 24px rgba(63, 81, 181, 0.10);
             --border-radius-sm: 4px;
-            --border-radius: 8px;
-            --border-radius-lg: 12px;
+            --border-radius: 10px;
+            --border-radius-lg: 18px;
             --transition: all 0.3s ease;
             --success-color: #4caf50;
             --danger-color: #f44336;
@@ -34,7 +34,7 @@
         
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: var(--gray-light);
+            background: linear-gradient(120deg, #f1f3f5 0%, #e3e9f7 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -44,42 +44,46 @@
         }
         
         .login-container {
-            background-color: white;
+            background: #fff;
             border-radius: var(--border-radius-lg);
             box-shadow: var(--shadow-lg);
             width: 100%;
             max-width: 400px;
-            padding: 30px;
+            padding: 38px 32px 30px 32px;
             margin: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .login-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
         
         .login-logo {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             width: 70px;
             height: 70px;
-            background-color: #feff99;
+            background: #feff99;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
-            margin: 0 auto 20px;
+            border-radius: 16px;
+            margin: 0 auto 18px;
+            box-shadow: 0 2px 8px rgba(63,81,181,0.08);
         }
         
         .login-logo img {
-            font-size: 35px;
-            color: white;
+            width: 60px;
+            height: 60px;
         }
         
         .login-title {
-            font-size: 24px;
+            font-size: 25px;
             font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         
         .login-subtitle {
@@ -88,12 +92,13 @@
         }
         
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 22px;
+            width: 100%;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 500;
             color: var(--dark-color);
             font-size: 15px;
@@ -101,19 +106,20 @@
         
         .form-control {
             width: 100%;
-            padding: 15px 15px 15px 50px;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
+            padding: 14px 14px 14px 48px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
             font-size: 15px;
             transition: var(--transition);
-            background-color: #f8f9fa;
+            background: #f8f9fa;
+            box-shadow: none;
         }
         
         .form-control:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
-            background-color: white;
+            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.13);
+            background: #fff;
         }
         
         .input-icon-wrapper {
@@ -122,7 +128,7 @@
         
         .input-icon {
             position: absolute;
-            left: 18px;
+            left: 16px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--gray-dark);
@@ -130,15 +136,13 @@
         }
         
         .form-check {
-            display: flex;
-            align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 18px;
         }
         
         .form-check-input {
-            margin-right: 10px;
-            width: 18px;
-            height: 18px;
+            margin-right: 8px;
+            width: 17px;
+            height: 17px;
             cursor: pointer;
             accent-color: var(--primary-color);
         }
@@ -148,32 +152,47 @@
             cursor: pointer;
         }
         
+        .forgot-password-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .forgot-password-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
         .btn-login {
             width: 100%;
-            background-color: var(--primary-color);
-            color: white;
+            background: linear-gradient(90deg, #3f51b5 60%, #5471f2 100%);
+            color: #fff;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 15px;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            margin-top: 8px;
+            box-shadow: 0 2px 8px rgba(63,81,181,0.08);
         }
         
         .btn-login:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(90deg, #303f9f 60%, #3f51b5 100%);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 16px rgba(63,81,181,0.13);
         }
         
         .login-footer {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 28px;
             color: var(--gray-dark);
             font-size: 14px;
         }
@@ -210,27 +229,36 @@
         /* CSS dành cho màn hình di động */
         @media (max-width: 768px) {
             .login-container {
-                max-width: 90%;
-                margin: 0 15px;
-                padding: 25px 20px;
+                max-width: 95%;
+                margin: 0 8px;
+                padding: 22px 8px 18px 8px;
             }
             
             .login-logo img {
-                width: 60px;
-                height: 60px;
+                width: 48px;
+                height: 48px;
             }
             
             .login-title {
-                font-size: 22px;
+                font-size: 20px;
             }
             
             .form-control {
-                padding: 14px 14px 14px 45px;
+                padding: 12px 12px 12px 40px;
             }
         }
     </style>
 </head>
 <body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-messages" style="display: none;">
+                {% for category, message in messages %}
+                    <div class="flash-message" data-category="{{ category }}" data-message="{{ message }}"></div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
     <div class="login-container">
         <div class="login-header">
             <div class="login-logo">
@@ -238,12 +266,6 @@
             </div>
             <h1 class="login-title">Quản Lý Tài Sản - DNC</h1>
             <p class="login-subtitle">Đăng nhập để tiếp tục</p>
-        </div>
-        
-        <div class="flash-container">
-            <div class="flash-message flash-success">
-                Đăng xuất thành công!
-            </div>
         </div>
         
         <form method="POST" action="">
@@ -260,13 +282,18 @@
                 <div class="input-icon-wrapper">
                     <i class="fas fa-lock input-icon"></i>
                     <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                    <button type="button" id="togglePassword" tabindex="-1" style="position: absolute; right: 18px; top: 50%; transform: translateY(-50%); background: none; border: none; outline: none; cursor: pointer; padding: 0; color: #6c757d; font-size: 18px;">
+                        <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                    </button>
                 </div>
             </div>
             
-            <div class="form-check">
-                <input type="checkbox" id="remember" name="remember" class="form-check-input">
-                <label for="remember">Ghi nhớ đăng nhập</label>
-            </div>
+            <div class="form-check" style="justify-content: space-between; display: flex; align-items: center; margin-bottom: 10px;">
+                <div>
+                    <input type="checkbox" id="remember" name="remember" class="form-check-input">
+                    <label for="remember">Ghi nhớ đăng nhập</label>
+                </div>
+                </div>
             
             <button type="submit" class="btn-login">
                 <i class="fas fa-sign-in-alt"></i> Đăng nhập
@@ -277,5 +304,45 @@
             <p>&copy; 2025 AssetManager. Phát triển bởi <a href="#">DNC</a></p>
         </div>
     </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            const notifySystem = new NotificationSystem();
+            
+            flashMessages.forEach(function(flash) {
+                const category = flash.dataset.category;
+                const message = flash.dataset.message;
+                
+                if (category === 'success') {
+                    notifySystem.success('Thành công', message);
+                } else if (category === 'error') {
+                    notifySystem.error('Lỗi', message);
+                } else if (category === 'warning') {
+                    notifySystem.warning('Cảnh báo', message);
+                } else {
+                    notifySystem.info('Thông báo', message);
+                }
+            });
+
+            const passwordInput = document.getElementById('password');
+            const togglePasswordBtn = document.getElementById('togglePassword');
+            const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        togglePasswordIcon.classList.remove('fa-eye');
+                        togglePasswordIcon.classList.add('fa-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        togglePasswordIcon.classList.remove('fa-eye-slash');
+                        togglePasswordIcon.classList.add('fa-eye');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

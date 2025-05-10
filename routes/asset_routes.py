@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from services.asset_service import AssetService
 from services.auth_service import login_required, role_required, AuthService
 from services.url_encryption import URLEncryption
-from datetime import datetime
+from datetime import datetime, date
 from services.notification_service import NotificationService
 from services.supabase_service import SupabaseService
 
@@ -603,11 +603,13 @@ def export_inventory():
 @asset_routes.route('/api/inventory/active-checks')
 @login_required
 def get_active_inventory_checks():
-    """API lấy danh sách đợt kiểm kê đang diễn ra"""
+    """API lấy danh sách đợt kiểm kê đang diễn ra (chỉ hiện hành)"""
     try:
-        # Lấy tất cả đợt kiểm kê, không chỉ đợt đang diễn ra
+        today = date.today().isoformat()
         response = SupabaseService().client.table('dotkiemke') \
             .select('*') \
+            .lte('ngay_bat_dau', today) \
+            .gte('ngay_ket_thuc', today) \
             .order('ngay_bat_dau', desc=True) \
             .execute()
             
